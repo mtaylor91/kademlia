@@ -29,7 +29,7 @@ instance Semigroup (LookupResults a) where
     , lookupOutput = o''
     } where
       n'' =
-        take kFactor $ sortOn (xor t . nodeKID) $
+        take kFactor $ sortOn (xor t . nodeKID . nodeID) $
         nubBy isNode $ sortOn nodeID $ n <> n'
       o'' = case (o, o') of
               (Just _, _) -> o
@@ -53,7 +53,7 @@ run context kid = do
       results <- runLookup context kid nearest
       let seen = [ n | (n, Just _) <- lookupResults results ]
           misses = [ n | (n, Just (FoundNodes _)) <- lookupResults results ]
-          nearMiss = take 1 $ sortOn (xor kid . nodeKID) misses
+          nearMiss = take 1 $ sortOn (xor kid . nodeKID . nodeID) misses
           output = lookupOutput results
       refreshAll (nodeID . localNode $ state) context seen
       case (output, nearMiss) of

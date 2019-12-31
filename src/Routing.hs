@@ -31,8 +31,9 @@ findNearestNodes :: State a -> KID -> Int -> [NodeInfo a]
 findNearestNodes state kid maxResults =
   f 1 $ bs !! i
   where
+    local = localNode state
     bs = kBuckets state
-    i = getBucketIndex (nodeID . localNode $ state) kid
+    i = getBucketIndex (nodeID $ local) kid
     f o accum =
       case (length accum, i+o) of
         (l, _) | l >= maxResults ->
@@ -50,4 +51,4 @@ findNearestNodes state kid maxResults =
         (_, _) ->
           sortAndFilter accum
     sortAndFilter results =
-      take maxResults $ sortOn (xor kid . nodeKID) results
+      take maxResults $ sortOn (xor kid . nodeKID . nodeID) results

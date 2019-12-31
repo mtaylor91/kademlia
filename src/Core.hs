@@ -91,10 +91,6 @@ isNode :: NodeInfo a -> NodeInfo b -> Bool
 isNode n0 n1 = nodeID n0 == nodeID n1
 
 
-nodeKID :: NodeInfo a -> KID
-nodeKID (NodeInfo (NodeID k) _) = k
-
-
 xor :: KID -> KID -> KID
 xor k k' = BA.xor k k'
 

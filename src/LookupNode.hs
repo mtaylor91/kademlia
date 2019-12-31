@@ -26,7 +26,7 @@ instance Semigroup (LookupResults a) where
     , lookupResults = r <> r'
     } where
       n'' =
-        take kFactor $ sortOn (xor t . nodeKID) $
+        take kFactor $ sortOn (xor t . nodeKID . nodeID) $
         nubBy isNode $ sortOn nodeID $ n <> n'
 
 

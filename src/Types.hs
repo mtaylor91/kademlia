@@ -13,7 +13,7 @@ newtype KID = KID (Block Word8)
   deriving (Eq,Ord,Monoid,Semigroup,ByteArray,ByteArrayAccess,Show)
 
 
-newtype NodeID = NodeID KID deriving (Eq,Ord,Show)
+newtype NodeID = NodeID { nodeKID :: KID } deriving (Eq,Ord,Show)
 
 
 data API a = API

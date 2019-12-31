@@ -7,6 +7,7 @@ import Control.Concurrent       (MVar,newEmptyMVar,takeMVar,putMVar,forkIO)
 import Data.Map                 (lookup)
 
 import Core
+import qualified Bootstrap
 import BucketRefresh            (bucketRefresh)
 import qualified InsertValue
 import qualified LookupNode
@@ -21,21 +22,22 @@ data Message a
   | forall r. Update (UpdateFunction a r) ((r, State a) -> IO ())
 
 
-bootstrap :: Eq a => ProtocolBuilder a -> a -> IO (API a)
-bootstrap builder addr = do
+bootstrap :: Eq a => ProtocolBuilder a -> a -> Maybe a -> IO (API a)
+bootstrap builder localAddr maybePeerAddr = do
   kid <- randomKID
-  protocol <- builder addr kid
-  start protocol kid
+  protocol <- builder localAddr kid
+  start protocol kid maybePeerAddr
 
 
-start :: Eq a => Protocol a -> KID -> IO (API a)
-start (Protocol addr send receive) kid = do
+start :: Eq a => Protocol a -> KID -> Maybe a -> IO (API a)
+start (Protocol addr send receive) kid maybePeerAddr = do
   let node = NodeInfo (NodeID kid) addr
       state = newEmptyState node
   messages <- newEmptyMVar
-  {- TODO: kademlia bootstrapping -}
-  _ <- forkIO $ processLoop messages send state
   _ <- forkIO $ receiveLoop messages receive
+  _ <- forkIO $ do
+    state' <- Bootstrap.run state send maybePeerAddr
+    processLoop messages send state'
   return $ api messages
 
 
@@ -67,7 +69,8 @@ processLoop messages send state = do
     APICall request respond ->
       processAPICall context state request respond
     PeerRPC node request respond -> do
-      let bi = getBucketIndex (nodeID . localNode $ state) $ nodeKID node
+      let local = localNode state
+          bi = getBucketIndex (nodeID local) $ (nodeKID . nodeID) node
       _ <- forkIO $ bucketRefresh context bi [node]
       (response, state') <- processRPC request state
       respond response
