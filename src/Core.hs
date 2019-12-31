@@ -5,6 +5,7 @@ import Prelude hiding (length,toInteger)
 
 import Basement.Block   (create,createFromPtr)
 import Basement.Types.OffsetSize (CountOf(..))
+import Control.Lens hiding (Context,index)
 import Crypto.Hash      (Digest,SHA256,hash)
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
@@ -58,12 +59,13 @@ sha256KID input = do
   return $ KID b
 
 
-newEmptyState :: a -> KID -> State a
-newEmptyState addr kid = State
-  { kBuckets = take kidBits $ repeat []
-  , localData = empty
-  , localNode = NodeInfo (NodeID kid) addr
-  }
+newEmptyState :: NodeInfo a -> State a
+newEmptyState node = updateBucket state [node] 255
+  where state = State
+          { kBuckets = take kidBits $ repeat []
+          , localData = empty
+          , localNode = node
+          }
 
 
 getState :: Context a -> IO (State a)
@@ -103,3 +105,8 @@ isLocal context node = (nodeID node) == (nodeID . localNode . localState) contex
 
 sendNode :: Context a -> RPCRequest -> NodeInfo a -> IO (RPCResult a)
 sendNode context request node = (sendRPC context) (nodeAddr node) request
+
+
+updateBucket :: State a -> [NodeInfo a] -> Int -> State a
+updateBucket state bucket i =
+  state { kBuckets = kBuckets state & element i .~ bucket }

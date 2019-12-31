@@ -51,12 +51,10 @@ updateNodes bi ns s =
        in case (findIndex f b, length b) of
             (Just i, _) ->
               let b' = b & element i .~ n
-                  state' = state { kBuckets = bs & element bi .~ b' }
-               in (skipped, state')
+               in (skipped, updateBucket state b' bi)
             (Nothing, l) | l < kFactor ->
               let b' = b ++ [n]
-                  state' = state { kBuckets = bs & element bi .~ b' }
-               in (skipped, state')
+               in (skipped, updateBucket state b' bi)
             (Nothing, _) ->
               (n:skipped, state)
 

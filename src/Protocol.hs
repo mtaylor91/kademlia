@@ -30,7 +30,8 @@ bootstrap builder addr = do
 
 start :: Eq a => Protocol a -> KID -> IO (API a)
 start (Protocol addr send receive) kid = do
-  let state = newEmptyState addr kid
+  let node = NodeInfo (NodeID kid) addr
+      state = newEmptyState node
   messages <- newEmptyMVar
   {- TODO: kademlia bootstrapping -}
   _ <- forkIO $ processLoop messages send state

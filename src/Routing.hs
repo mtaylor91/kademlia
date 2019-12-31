@@ -16,8 +16,8 @@ getBucketIndex (NodeID nodekid) kid =
       startIndex :: Int = 0
       endIndex :: Int = kidBits - 1
       distance :: KID = xor kid nodekid
-      firstNonZeroIndex indices =
-        case indices of
+      firstNonZeroIndex x =
+        case x of
           [] ->
             endIndex
           (i:indices') ->
