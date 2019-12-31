@@ -1,4 +1,4 @@
-module LookupValue (lookupValue) where
+module LookupValue (run) where
 
 import Prelude hiding (lookup,until)
 
@@ -42,8 +42,8 @@ instance Monoid (LookupResults a) where
   mappend lr lr' = lr <> lr'
 
 
-lookupValue :: Eq a => Context a -> KID -> IO (Maybe ByteString)
-lookupValue context kid = do
+run :: Eq a => Context a -> KID -> IO (Maybe ByteString)
+run context kid = do
   state <- getState context
   case lookup kid (localData state) of
     Just value ->

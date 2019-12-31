@@ -1,5 +1,5 @@
 {-# LANGUAGE RankNTypes #-}
-module LookupNode (lookupNode) where
+module LookupNode (run) where
 
 import Prelude hiding (until)
 
@@ -35,8 +35,8 @@ instance Monoid (LookupResults a) where
   mappend lr lr' = lr <> lr'
 
 
-lookupNode :: Eq a => Context a -> KID -> IO [NodeInfo a]
-lookupNode context kid = do
+run :: Eq a => Context a -> KID -> IO [NodeInfo a]
+run context kid = do
   state <- getState context
   let nodes = findNearestNodes state kid kFactor
   results <- runLookup context kid nodes

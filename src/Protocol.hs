@@ -7,9 +7,9 @@ import Data.Map                 (lookup)
 
 import Core
 import BucketRefresh            (bucketRefresh)
-import InsertValue              (insertValue)
-import LookupNode               (lookupNode)
-import LookupValue              (lookupValue)
+import qualified InsertValue
+import qualified LookupNode
+import qualified LookupValue
 import Routing                  (getBucketIndex,findNearestNodes)
 import Types
 
@@ -30,13 +30,13 @@ processLoop messages send state = do
   message <- takeMVar messages
   state' <- case message of
     LookupNode kid respond -> do
-      _ <- forkIO $ lookupNode context kid >>= respond
+      _ <- forkIO $ LookupNode.run context kid >>= respond
       return state
     LookupValue kid respond -> do
-      _ <- forkIO $ lookupValue context kid >>= respond
+      _ <- forkIO $ LookupValue.run context kid >>= respond
       return state
     InsertValue kid value respond -> do
-      _ <- forkIO $ insertValue context kid value >>= respond
+      _ <- forkIO $ InsertValue.run context kid value >>= respond
       return state
     PeerRPC node request respond -> do
       let bi = getBucketIndex (localNodeID state) $ nodeKID node

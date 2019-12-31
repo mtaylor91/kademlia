@@ -10,6 +10,15 @@ import Data.Map         (Map)
 import Data.Word        (Word8)
 
 
+type LookupNode a = KID -> [NodeInfo a]
+
+
+type LookupValue = KID -> Maybe ByteString
+
+
+type InsertValue a = KID -> ByteString -> [NodeInfo a]
+
+
 type Send a = a -> Request -> IO (Result a)
 
 
@@ -32,6 +41,13 @@ type Update a = forall r. UpdateFunction a r -> IO (r, State a)
 
 
 type KBuckets a = [[NodeInfo a]]
+
+
+data API a = API
+  { lookupNode :: LookupNode a
+  , lookupValue :: LookupValue
+  , insertValue :: InsertValue a
+  }
 
 
 data Protocol a
