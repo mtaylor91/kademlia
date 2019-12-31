@@ -1,4 +1,4 @@
-module Protocol (start) where
+module Protocol (bootstrap,start) where
 
 import Prelude hiding (lookup)
 
@@ -14,14 +14,41 @@ import Routing                  (getBucketIndex,findNearestNodes)
 import Types
 
 
-start :: Eq a => Protocol a -> KID -> IO ()
+bootstrap :: Eq a => ProtocolBuilder a -> a -> IO (API a)
+bootstrap builder addr = do
+  kid <- randomKID
+  protocol <- builder addr kid
+  start protocol kid
+
+
+start :: Eq a => Protocol a -> KID -> IO (API a)
 start (Protocol addr send receive) kid = do
   let state = newEmptyState addr kid
   messages <- newEmptyMVar
   {- TODO: kademlia bootstrapping -}
   _ <- forkIO $ processLoop messages send state
   _ <- forkIO $ receiveLoop messages receive
-  return ()
+  return $ api messages
+
+
+api :: MVar (Message a) -> API a
+api messages = API
+  { lookupNode = \kid ->
+    apiRequest messages (LookupNode kid) $ \(LookupNodeResult r) -> r
+  , lookupValue = \kid ->
+    apiRequest messages (LookupValue kid) $ \(LookupValueResult r) -> r
+  , insertValue = \kid bytes ->
+    apiRequest messages (InsertValue kid bytes) $ \(InsertValueResult r) -> r
+  }
+
+
+apiRequest :: MVar (Message a) -> APIRequest -> (APIResponse a -> b) -> IO b
+apiRequest messages request translate = do
+  mvar <- newEmptyMVar
+  let respond result = putMVar mvar result
+  putMVar messages $ APICall request respond
+  result <- takeMVar mvar
+  return $ translate result
 
 
 processLoop :: Eq a => MVar (Message a) -> (SendRPC a) -> (State a) -> IO ()

@@ -10,15 +10,6 @@ import Data.Map         (Map)
 import Data.Word        (Word8)
 
 
-type LookupNode a = KID -> IO [NodeInfo a]
-
-
-type LookupValue = KID -> IO (Maybe ByteString)
-
-
-type InsertValue a = KID -> ByteString -> IO [NodeInfo a]
-
-
 type SendRPC a = a -> RPCRequest -> IO (RPCResult a)
 
 
@@ -37,16 +28,16 @@ type UpdateFunction a r = State a -> (r, State a)
 type Update a = forall r. UpdateFunction a r -> IO (r, State a)
 
 
-type KBuckets a = [[NodeInfo a]]
+type ProtocolBuilder a = a -> KID -> IO (Protocol a)
 
 
 type APIRespond a = APIResponse a -> IO ()
 
 
 data API a = API
-  { lookupNode :: LookupNode a
-  , lookupValue :: LookupValue
-  , insertValue :: InsertValue a
+  { lookupNode :: KID -> IO [NodeInfo a]
+  , lookupValue :: KID -> IO (Maybe ByteString)
+  , insertValue :: KID -> ByteString -> IO [NodeInfo a]
   }
 
 
@@ -97,7 +88,7 @@ data NodeInfo a = NodeInfo
 
 
 data State a = State
-  { kBuckets :: KBuckets a
+  { kBuckets :: [[NodeInfo a]]
   , localData :: Map KID ByteString
   , localNodeID :: NodeID
   , localNodeAddr :: a
