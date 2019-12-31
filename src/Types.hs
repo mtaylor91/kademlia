@@ -40,6 +40,9 @@ type Update a = forall r. UpdateFunction a r -> IO (r, State a)
 type KBuckets a = [[NodeInfo a]]
 
 
+type APIRespond a = APIResponse a -> IO ()
+
+
 data API a = API
   { lookupNode :: LookupNode a
   , lookupValue :: LookupValue
@@ -47,14 +50,26 @@ data API a = API
   }
 
 
+data APIRequest
+  = LookupNode KID
+  | LookupValue KID
+  | InsertValue KID ByteString
+  deriving (Eq,Show)
+
+
+data APIResponse a
+  = LookupNodeResult [NodeInfo a]
+  | LookupValueResult (Maybe ByteString)
+  | InsertValueResult [NodeInfo a]
+  deriving (Eq,Show)
+
+
 data Protocol a
   = Protocol a (SendRPC a) (ReceiveRPC a)
 
 
 data Message a
-  = LookupNode KID ([NodeInfo a] -> IO ())
-  | LookupValue KID (Maybe ByteString -> IO ())
-  | InsertValue KID ByteString ([NodeInfo a] -> IO ())
+  = APICall APIRequest (APIResponse a -> IO ())
   | PeerRPC (NodeInfo a) RPCRequest (RespondRPC a)
   | forall r. Update (UpdateFunction a r) ((r, State a) -> IO ())
 

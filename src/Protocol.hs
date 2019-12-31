@@ -29,15 +29,8 @@ processLoop messages send state = do
   let context = Context send state $ update messages
   message <- takeMVar messages
   state' <- case message of
-    LookupNode kid respond -> do
-      _ <- forkIO $ LookupNode.run context kid >>= respond
-      return state
-    LookupValue kid respond -> do
-      _ <- forkIO $ LookupValue.run context kid >>= respond
-      return state
-    InsertValue kid value respond -> do
-      _ <- forkIO $ InsertValue.run context kid value >>= respond
-      return state
+    APICall request respond ->
+      processAPICall context state request respond
     PeerRPC node request respond -> do
       let bi = getBucketIndex (localNodeID state) $ nodeKID node
       _ <- forkIO $ bucketRefresh context bi [node]
@@ -49,6 +42,27 @@ processLoop messages send state = do
       respond (r, state')
       return state'
   processLoop messages send state'
+
+
+processAPICall :: Eq a =>
+  Context a -> State a -> APIRequest -> APIRespond a -> IO (State a)
+processAPICall context state request respond = do
+  case request of
+    LookupNode kid -> do
+      _ <- forkIO $ do
+        nodes <- LookupNode.run context kid
+        respond $ LookupNodeResult nodes
+      return state
+    LookupValue kid -> do
+      _ <- forkIO $ do
+        value <- LookupValue.run context kid
+        respond $ LookupValueResult value
+      return state
+    InsertValue kid value -> do
+      _ <- forkIO $ do
+        nodes <- InsertValue.run context kid value
+        respond $ InsertValueResult nodes
+      return state
 
 
 processRPC :: RPCRequest -> State a -> IO (RPCResponse a, State a)
