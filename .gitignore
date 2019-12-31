@@ -1,0 +1,4 @@
+.stack-work/
+kademlia.cabal
+*~
+*.swp
