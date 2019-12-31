@@ -26,8 +26,8 @@ data UDPAddr = UDPAddr
 
 data UDPSocket = UDPSocket
   { socketAdvertiseAddress :: UDPAddr
-  , socketAddActiveRequest :: KID -> (Result UDPAddr -> IO ()) -> IO ()
-  , socketGetActiveRequest :: KID -> IO (Maybe (Result UDPAddr -> IO ()))
+  , socketAddActiveRequest :: KID -> (RPCResult UDPAddr -> IO ()) -> IO ()
+  , socketGetActiveRequest :: KID -> IO (Maybe (RPCResult UDPAddr -> IO ()))
   , socketUDPSocket :: NS.Socket
   , socketKID :: KID
   }
@@ -42,6 +42,6 @@ data UDPMessage = UDPMessage
 
 
 data UDPMessageData
-  = UDPRequest Request
-  | UDPResponse (Response UDPAddr)
+  = UDPRequest RPCRequest
+  | UDPResponse (RPCResponse UDPAddr)
   deriving (Show)

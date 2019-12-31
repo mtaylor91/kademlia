@@ -6,7 +6,7 @@ import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.UTF8 as UTF8
 
-import Types (KID(..),NodeID(..),NodeInfo(..),Request(..),Response(..))
+import Types (KID(..),NodeID(..),NodeInfo(..),RPCRequest(..),RPCResponse(..))
 import UDP.Core
 import UDP.Types
 
@@ -45,7 +45,7 @@ encodeData messageData =
       encodeResponse response
 
 
-encodeRequest :: Request -> BSB.Builder
+encodeRequest :: RPCRequest -> BSB.Builder
 encodeRequest request =
   case request of
     Ping ->
@@ -69,7 +69,7 @@ encodeRequest request =
         ]
 
 
-encodeResponse :: Response UDPAddr -> BSB.Builder
+encodeResponse :: RPCResponse UDPAddr -> BSB.Builder
 encodeResponse response =
   case response of
     Pong ->

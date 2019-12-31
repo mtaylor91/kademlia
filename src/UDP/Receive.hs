@@ -4,14 +4,14 @@ import qualified Data.ByteString.Lazy as LBS
 import qualified Network.Socket as NS
 import qualified Network.Socket.ByteString as NSBS
 
-import Types (NodeID(..),NodeInfo(..),Receive,Request,Response)
+import Types (NodeID(..),NodeInfo(..),ReceiveRPC,RPCRequest,RPCResponse)
 import UDP.Core
 import UDP.Decoding
 import UDP.Encoding
 import UDP.Types
 
 
-receive :: UDPSocket -> Receive UDPAddr
+receive :: UDPSocket -> ReceiveRPC UDPAddr
 receive s = do
   (bytes, origin) <- NSBS.recvFrom (socketUDPSocket s) maxMessageLength
   case decode bytes of
@@ -27,7 +27,7 @@ receive s = do
 
 
 receiveRequest ::
-  UDPSocket -> UDPMessage -> Request -> NS.SockAddr -> Receive UDPAddr
+  UDPSocket -> UDPMessage -> RPCRequest -> NS.SockAddr -> ReceiveRPC UDPAddr
 receiveRequest s message request origin = do
   let sender = NodeInfo senderID senderAddr
       senderID = NodeID $ udpSourceKID message
@@ -44,7 +44,7 @@ receiveRequest s message request origin = do
   return (sender, request, respond)
 
 
-receiveResponse :: UDPSocket -> UDPMessage -> Response UDPAddr -> IO ()
+receiveResponse :: UDPSocket -> UDPMessage -> RPCResponse UDPAddr -> IO ()
 receiveResponse s message response = do
   active <- (socketGetActiveRequest s) (udpRequestKID message)
   case active of

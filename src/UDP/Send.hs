@@ -6,13 +6,13 @@ import qualified Network.Socket as NS
 import qualified Network.Socket.ByteString as NSBS
 
 import Core (randomKID)
-import Types (Send)
+import Types (SendRPC)
 import UDP.Core
 import UDP.Encoding
 import UDP.Types
 
 
-send :: UDPSocket -> Send UDPAddr
+send :: UDPSocket -> SendRPC UDPAddr
 send s addr request = do
   requestKID <- randomKID
 

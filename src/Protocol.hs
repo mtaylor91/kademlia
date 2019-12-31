@@ -24,7 +24,7 @@ start (Protocol addr send receive) kid = do
   return ()
 
 
-processLoop :: Eq a => MVar (Message a) -> (Send a) -> (State a) -> IO ()
+processLoop :: Eq a => MVar (Message a) -> (SendRPC a) -> (State a) -> IO ()
 processLoop messages send state = do
   let context = Context send state $ update messages
   message <- takeMVar messages
@@ -51,7 +51,7 @@ processLoop messages send state = do
   processLoop messages send state'
 
 
-processRPC :: Request -> State a -> IO (Response a, State a)
+processRPC :: RPCRequest -> State a -> IO (RPCResponse a, State a)
 processRPC request state =
   case request of
     Ping ->
@@ -71,7 +71,7 @@ processRPC request state =
        in return $ (Stored kid, state')
 
 
-receiveLoop :: MVar (Message a) -> Receive a -> IO ()
+receiveLoop :: MVar (Message a) -> ReceiveRPC a -> IO ()
 receiveLoop messages receive = do
   (nodestate, request, respond) <- receive
   putMVar messages $ PeerRPC nodestate request respond

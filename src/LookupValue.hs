@@ -16,7 +16,7 @@ import Types
 data LookupResults a = LookupResults
   { lookupTarget :: KID
   , lookupNearest :: [NodeInfo a]
-  , lookupResults :: [(NodeInfo a, Maybe (Response a))]
+  , lookupResults :: [(NodeInfo a, Maybe (RPCResponse a))]
   , lookupOutput :: Maybe ByteString
   }
 

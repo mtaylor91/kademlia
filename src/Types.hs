@@ -10,28 +10,25 @@ import Data.Map         (Map)
 import Data.Word        (Word8)
 
 
-type LookupNode a = KID -> [NodeInfo a]
+type LookupNode a = KID -> IO [NodeInfo a]
 
 
-type LookupValue = KID -> Maybe ByteString
+type LookupValue = KID -> IO (Maybe ByteString)
 
 
-type InsertValue a = KID -> ByteString -> [NodeInfo a]
+type InsertValue a = KID -> ByteString -> IO [NodeInfo a]
 
 
-type Send a = a -> Request -> IO (Result a)
+type SendRPC a = a -> RPCRequest -> IO (RPCResult a)
 
 
-type Respond a = Response a -> IO ()
+type RespondRPC a = RPCResponse a -> IO ()
 
 
-type Results a = [Result a]
+type RPCResult a = (NodeInfo a, Maybe (RPCResponse a))
 
 
-type Result a = (NodeInfo a, Maybe (Response a))
-
-
-type Receive a = IO (NodeInfo a, Request, Respond a)
+type ReceiveRPC a = IO (NodeInfo a, RPCRequest, RespondRPC a)
 
 
 type UpdateFunction a r = State a -> (r, State a)
@@ -51,18 +48,18 @@ data API a = API
 
 
 data Protocol a
-  = Protocol a (Send a) (Receive a)
+  = Protocol a (SendRPC a) (ReceiveRPC a)
 
 
 data Message a
   = LookupNode KID ([NodeInfo a] -> IO ())
   | LookupValue KID (Maybe ByteString -> IO ())
   | InsertValue KID ByteString ([NodeInfo a] -> IO ())
-  | PeerRPC (NodeInfo a) Request (Respond a)
+  | PeerRPC (NodeInfo a) RPCRequest (RespondRPC a)
   | forall r. Update (UpdateFunction a r) ((r, State a) -> IO ())
 
 
-data Request
+data RPCRequest
   = Ping
   | FindNodes NodeID
   | FindValue KID
@@ -70,7 +67,7 @@ data Request
   deriving (Eq,Show)
 
 
-data Response a
+data RPCResponse a
   = Pong
   | FoundNodes [NodeInfo a]
   | FoundValue ByteString
@@ -93,7 +90,7 @@ data State a = State
 
 
 data Context a = Context
-  { sendRPC :: Send a
+  { sendRPC :: SendRPC a
   , localState :: State a
   , updateLocalState :: Update a
   }
