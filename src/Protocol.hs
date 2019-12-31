@@ -1,3 +1,4 @@
+{-# LANGUAGE ExistentialQuantification #-}
 module Protocol (bootstrap,start) where
 
 import Prelude hiding (lookup)
@@ -12,6 +13,12 @@ import qualified LookupNode
 import qualified LookupValue
 import Routing                  (getBucketIndex,findNearestNodes)
 import Types
+
+
+data Message a
+  = APICall APIRequest (APIResponse a -> IO ())
+  | PeerRPC (NodeInfo a) RPCRequest (RespondRPC a)
+  | forall r. Update (UpdateFunction a r) ((r, State a) -> IO ())
 
 
 bootstrap :: Eq a => ProtocolBuilder a -> a -> IO (API a)

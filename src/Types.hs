@@ -1,4 +1,3 @@
-{-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE RankNTypes, LiberalTypeSynonyms #-}
 module Types where
@@ -10,28 +9,11 @@ import Data.Map         (Map)
 import Data.Word        (Word8)
 
 
-type SendRPC a = a -> RPCRequest -> IO (RPCResult a)
+newtype KID = KID (Block Word8)
+  deriving (Eq,Ord,Monoid,Semigroup,ByteArray,ByteArrayAccess,Show)
 
 
-type RespondRPC a = RPCResponse a -> IO ()
-
-
-type RPCResult a = (NodeInfo a, Maybe (RPCResponse a))
-
-
-type ReceiveRPC a = IO (NodeInfo a, RPCRequest, RespondRPC a)
-
-
-type UpdateFunction a r = State a -> (r, State a)
-
-
-type Update a = forall r. UpdateFunction a r -> IO (r, State a)
-
-
-type ProtocolBuilder a = a -> KID -> IO (Protocol a)
-
-
-type APIRespond a = APIResponse a -> IO ()
+newtype NodeID = NodeID KID deriving (Eq,Ord,Show)
 
 
 data API a = API
@@ -57,12 +39,6 @@ data APIResponse a
 
 data Protocol a
   = Protocol a (SendRPC a) (ReceiveRPC a)
-
-
-data Message a
-  = APICall APIRequest (APIResponse a -> IO ())
-  | PeerRPC (NodeInfo a) RPCRequest (RespondRPC a)
-  | forall r. Update (UpdateFunction a r) ((r, State a) -> IO ())
 
 
 data RPCRequest
@@ -101,8 +77,25 @@ data Context a = Context
   }
 
 
-newtype KID = KID (Block Word8)
-  deriving (Eq,Ord,Monoid,Semigroup,ByteArray,ByteArrayAccess,Show)
+type SendRPC a = a -> RPCRequest -> IO (RPCResult a)
 
 
-newtype NodeID = NodeID KID deriving (Eq,Ord,Show)
+type RespondRPC a = RPCResponse a -> IO ()
+
+
+type RPCResult a = (NodeInfo a, Maybe (RPCResponse a))
+
+
+type ReceiveRPC a = IO (NodeInfo a, RPCRequest, RespondRPC a)
+
+
+type UpdateFunction a r = State a -> (r, State a)
+
+
+type Update a = forall r. UpdateFunction a r -> IO (r, State a)
+
+
+type ProtocolBuilder a = a -> KID -> IO (Protocol a)
+
+
+type APIRespond a = APIResponse a -> IO ()
