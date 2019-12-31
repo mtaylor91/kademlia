@@ -3,7 +3,6 @@ module Main where
 import System.Environment
 
 import qualified Core
-import qualified Protocol
 import qualified UDP
 
 import UDP.Types
@@ -60,11 +59,12 @@ main = do
   kid <- Core.randomKID
   bind <- bindAddress
   addr <- advertiseAddress
-  udp <- UDP.udp bind addr kid
+
+  UDP.start bind addr kid
+
   putStrLn $ "Listening on udp://" <> hostname bind <> ":" <> udpPort bind
   if addr == bind then return () else do
     putStrLn $ "Advertising udp://" <> hostname addr <> ":" <> udpPort addr
-  Protocol.start udp kid
 
 
 envOrDefault :: [String] -> String -> IO String
