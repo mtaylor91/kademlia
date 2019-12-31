@@ -59,7 +59,7 @@ processLoop messages send state = do
     APICall request respond ->
       processAPICall context state request respond
     PeerRPC node request respond -> do
-      let bi = getBucketIndex (localNodeID state) $ nodeKID node
+      let bi = getBucketIndex (nodeID . localNode $ state) $ nodeKID node
       _ <- forkIO $ bucketRefresh context bi [node]
       (response, state') <- processRPC request state
       respond response

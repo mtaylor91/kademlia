@@ -90,8 +90,7 @@ data NodeInfo a = NodeInfo
 data State a = State
   { kBuckets :: [[NodeInfo a]]
   , localData :: Map KID ByteString
-  , localNodeID :: NodeID
-  , localNodeAddr :: a
+  , localNode :: NodeInfo a
   } deriving (Show)
 
 

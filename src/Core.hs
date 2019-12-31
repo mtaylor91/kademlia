@@ -62,8 +62,7 @@ newEmptyState :: a -> KID -> State a
 newEmptyState addr kid = State
   { kBuckets = take kidBits $ repeat []
   , localData = empty
-  , localNodeID = NodeID kid
-  , localNodeAddr = addr
+  , localNode = NodeInfo (NodeID kid) addr
   }
 
 
@@ -99,7 +98,7 @@ xor k k' = BA.xor k k'
 
 
 isLocal :: Context a -> NodeInfo a -> Bool
-isLocal context node = (nodeID node) == (localNodeID $ localState context)
+isLocal context node = (nodeID node) == (nodeID . localNode . localState) context
 
 
 sendNode :: Context a -> RPCRequest -> NodeInfo a -> IO (RPCResult a)

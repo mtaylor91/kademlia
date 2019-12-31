@@ -42,7 +42,7 @@ run context kid = do
   results <- runLookup context kid nodes
   let seen = [ n | (n, Just _) <- lookupResults results ]
       nodes' = lookupNearest results
-  refreshAll (localNodeID state) context seen
+  refreshAll (nodeID . localNode $ state) context seen
   return nodes'
 
 

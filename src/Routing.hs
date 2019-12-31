@@ -32,7 +32,7 @@ findNearestNodes state kid maxResults =
   f 1 $ bs !! i
   where
     bs = kBuckets state
-    i = getBucketIndex (localNodeID state) kid
+    i = getBucketIndex (nodeID . localNode $ state) kid
     f o accum =
       case (length accum, i+o) of
         (l, _) | l >= maxResults ->
