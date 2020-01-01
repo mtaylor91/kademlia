@@ -1,15 +1,15 @@
 {-# LANGUAGE RankNTypes #-}
-module LookupNode (run) where
+module Kademlia.LookupNode (run) where
 
 import Prelude hiding (until)
 
 import Data.List
 
-import Core
-import BucketRefresh (refreshAll)
-import Parallel (until)
-import Routing (findNearestNodes)
-import Types hiding (LookupNode)
+import Kademlia.Core
+import Kademlia.BucketRefresh (refreshAll)
+import Kademlia.ParallelProducer (until)
+import Kademlia.Routing (findNearestNodes)
+import Kademlia.Types hiding (LookupNode)
 
 
 data LookupResults a = LookupResults

@@ -1,4 +1,4 @@
-module UDP.Encoding where
+module Kademlia.UDP.Encoding where
 
 import Basement.Block (cast,singleton)
 import Basement.Compat.IsList
@@ -7,9 +7,9 @@ import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.UTF8 as UTF8
 
-import Types (KID(..),NodeID(..),NodeInfo(..),RPCRequest(..),RPCResponse(..))
-import UDP.Core
-import UDP.Types
+import Kademlia.Types (KID(..),NodeID(..),NodeInfo(..),RPCRequest(..),RPCResponse(..))
+import Kademlia.UDP.Core
+import Kademlia.UDP.Types
 
 
 encode :: UDPMessage -> LBS.ByteString

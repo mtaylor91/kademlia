@@ -1,4 +1,4 @@
-module UDP (UDPAddr(..),protocol) where
+module Kademlia.UDP (UDPAddr(..),protocol) where
 
 import Prelude hiding (lookup)
 
@@ -6,11 +6,11 @@ import Control.Concurrent
 import Data.Map (empty,insert,lookup,delete)
 import qualified Network.Socket as NS
 
-import Types
-import UDP.Core
-import UDP.Receive
-import UDP.Send
-import UDP.Types
+import Kademlia.Types
+import Kademlia.UDP.Core
+import Kademlia.UDP.Receive
+import Kademlia.UDP.Send
+import Kademlia.UDP.Types
 
 
 protocol :: UDPAddr -> UDPAddr -> KID -> IO (Protocol UDPAddr)

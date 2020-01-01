@@ -1,19 +1,20 @@
 {-# LANGUAGE ExistentialQuantification #-}
-module Protocol (bootstrap,start) where
+module Kademlia.Controller (bootstrap,start) where
 
 import Prelude hiding (lookup)
 
 import Control.Concurrent       (MVar,newEmptyMVar,takeMVar,putMVar,forkIO)
 import Data.Map                 (lookup)
 
-import Core
-import qualified Bootstrap
-import BucketRefresh            (bucketRefresh)
-import qualified InsertValue
-import qualified LookupNode
-import qualified LookupValue
-import Routing                  (getBucketIndex,findNearestNodes)
-import Types
+import Kademlia.Core
+import Kademlia.BucketRefresh            (bucketRefresh)
+import Kademlia.Routing                  (getBucketIndex,findNearestNodes)
+import Kademlia.Types
+
+import qualified Kademlia.Bootstrap as Bootstrap
+import qualified Kademlia.InsertValue as InsertValue
+import qualified Kademlia.LookupNode as LookupNode
+import qualified Kademlia.LookupValue as LookupValue
 
 
 data Message a

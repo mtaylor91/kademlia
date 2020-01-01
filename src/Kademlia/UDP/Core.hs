@@ -1,8 +1,8 @@
-module UDP.Core where
+module Kademlia.UDP.Core where
 
 import qualified Network.Socket as NS
 
-import UDP.Types
+import Kademlia.UDP.Types
 
 
 maxMessageLength :: Int

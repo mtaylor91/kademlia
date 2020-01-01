@@ -1,14 +1,14 @@
-module UDP.Receive where
+module Kademlia.UDP.Receive where
 
 import qualified Data.ByteString.Lazy as LBS
 import qualified Network.Socket as NS
 import qualified Network.Socket.ByteString as NSBS
 
-import Types (NodeID(..),NodeInfo(..),ReceiveRPC,RPCRequest,RPCResponse)
-import UDP.Core
-import UDP.Decoding
-import UDP.Encoding
-import UDP.Types
+import Kademlia.Types (NodeID(..),NodeInfo(..),ReceiveRPC,RPCRequest,RPCResponse)
+import Kademlia.UDP.Core
+import Kademlia.UDP.Decoding
+import Kademlia.UDP.Encoding
+import Kademlia.UDP.Types
 
 
 receive :: UDPSocket -> ReceiveRPC UDPAddr

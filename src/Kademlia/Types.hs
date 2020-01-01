@@ -1,6 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE RankNTypes, LiberalTypeSynonyms #-}
-module Types where
+module Kademlia.Types where
 
 import Basement.Types.Word256   (Word256)
 import Data.ByteString          (ByteString)

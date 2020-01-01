@@ -1,13 +1,13 @@
-module BucketRefresh (bucketRefresh,refreshAll) where
+module Kademlia.BucketRefresh (bucketRefresh,refreshAll) where
 
 import Control.Concurrent
 import Control.Concurrent.Async (mapConcurrently)
 import Data.List
 import Data.List.Extra
 
-import Core
-import Routing
-import Types
+import Kademlia.Core
+import Kademlia.Routing
+import Kademlia.Types
 
 
 refreshAll :: Context a -> [NodeInfo a] -> IO ()

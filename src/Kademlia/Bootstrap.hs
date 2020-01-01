@@ -1,12 +1,13 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-module Bootstrap (run) where
+module Kademlia.Bootstrap (run) where
 
-import BucketRefresh (bucketRefresh)
 import Control.Concurrent (threadDelay)
-import Routing (getBucketIndex)
-import Types
 
-import qualified LookupNode
+import Kademlia.BucketRefresh (bucketRefresh)
+import Kademlia.Routing (getBucketIndex)
+import Kademlia.Types
+
+import qualified Kademlia.LookupNode as LookupNode
 
 
 retryWaitSeconds :: Int

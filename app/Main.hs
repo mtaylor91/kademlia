@@ -3,11 +3,11 @@ module Main where
 import Data.Char
 import System.Environment
 
-import qualified Protocol
-import qualified UDP
+import qualified Kademlia.Controller as Controller
+import qualified Kademlia.UDP as UDP
 
-import Types
-import UDP.Types
+import Kademlia.Types
+import Kademlia.UDP.Types
 
 
 defaultLocalHost :: String
@@ -98,7 +98,7 @@ startAPI = do
   join <- bootstrapAddress
 
   let udp = UDP.protocol bind
-  api <- Protocol.bootstrap udp addr join
+  api <- Controller.bootstrap udp addr join
 
   putStrLn $ "Listening on " <> show bind
   if addr == bind then return () else do

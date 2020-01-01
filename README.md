@@ -22,4 +22,4 @@ session.
 ### Installing
 
 Invoking `stack install` from the root of this repository will build the
-application and place the executable in `$HOME/.local/bin/kademlia-exe`.
+application and place the executable in `$HOME/.local/bin/kademlia`.

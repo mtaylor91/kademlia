@@ -1,6 +1,6 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE RankNTypes #-}
-module Parallel (exhaustively,until) where
+module Kademlia.ParallelProducer (exhaustively,until) where
 
 import Prelude hiding (until)
 

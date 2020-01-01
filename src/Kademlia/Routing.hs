@@ -1,5 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-module Routing where
+module Kademlia.Routing where
 
 import Prelude hiding (toInteger)
 
@@ -8,8 +8,8 @@ import Basement.Numerical.Number (toInteger)
 import Control.Lens
 import Data.List
 
-import Core
-import Types
+import Kademlia.Core
+import Kademlia.Types
 
 
 getBucketIndex :: NodeID -> KID -> Int

@@ -1,4 +1,4 @@
-module UDP.Send where
+module Kademlia.UDP.Send where
 
 import Control.Concurrent (newEmptyMVar,putMVar,takeMVar)
 import qualified Data.ByteString.Lazy as LBS
@@ -6,11 +6,11 @@ import qualified Network.Socket as NS
 import qualified Network.Socket.ByteString as NSBS
 import System.Timeout
 
-import Core (randomKID)
-import Types (SendRPC)
-import UDP.Core
-import UDP.Encoding
-import UDP.Types
+import Kademlia.Core (randomKID)
+import Kademlia.Types (SendRPC)
+import Kademlia.UDP.Core
+import Kademlia.UDP.Encoding
+import Kademlia.UDP.Types
 
 
 responseTimeoutMilliseconds :: Int

@@ -1,14 +1,14 @@
-module UDP.Decoding where
+module Kademlia.UDP.Decoding where
 
 import Control.Monad
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.UTF8 as UTF8
 import Data.Word (Word8)
 
-import Core (createKID,kidBytes)
-import Types (KID,NodeID(..),NodeInfo(..),RPCRequest(..),RPCResponse(..))
-import UDP.Core
-import UDP.Types
+import Kademlia.Core (createKID,kidBytes)
+import Kademlia.Types (KID,NodeID(..),NodeInfo(..),RPCRequest(..),RPCResponse(..))
+import Kademlia.UDP.Core
+import Kademlia.UDP.Types
 
 
 newtype Decoder a = Decoder (BS.ByteString -> Maybe (a, BS.ByteString))

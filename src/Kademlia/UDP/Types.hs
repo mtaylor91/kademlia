@@ -1,9 +1,9 @@
-module UDP.Types where
+module Kademlia.UDP.Types where
 
 import Data.Word (Word8)
 import qualified Network.Socket as NS
 
-import Types
+import Kademlia.Types
 
 
 type HostName = NS.HostName

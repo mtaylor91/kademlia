@@ -1,5 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-module Core where
+module Kademlia.Core where
 
 import Prelude hiding (length,toInteger)
 
@@ -14,7 +14,7 @@ import Data.Map (empty,insert)
 import Data.Word (Word8)
 import System.Random (getStdGen,setStdGen,random)
 
-import Types
+import Kademlia.Types
 
 
 kFactor :: Int

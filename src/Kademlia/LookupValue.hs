@@ -1,4 +1,4 @@
-module LookupValue (run) where
+module Kademlia.LookupValue (run) where
 
 import Prelude hiding (lookup,until)
 
@@ -6,11 +6,11 @@ import Data.ByteString (ByteString)
 import Data.List (nubBy,sortOn)
 import Data.Map (lookup)
 
-import Core
-import BucketRefresh (refreshAll)
-import Parallel (until)
-import Routing (findNearestNodes)
-import Types
+import Kademlia.Core
+import Kademlia.BucketRefresh (refreshAll)
+import Kademlia.ParallelProducer (until)
+import Kademlia.Routing (findNearestNodes)
+import Kademlia.Types
 
 
 data LookupResults a = LookupResults
