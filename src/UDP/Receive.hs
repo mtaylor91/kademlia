@@ -52,6 +52,6 @@ receiveResponse s message response = do
       let node = NodeInfo
             (NodeID $ udpSourceKID message)
             (udpSourceAddr message)
-      respond $ Just (node, response)
+      respond (node, response)
     Nothing ->
       return ()

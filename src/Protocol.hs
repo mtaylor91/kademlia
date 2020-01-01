@@ -35,8 +35,8 @@ start (Protocol addr send receive) kid maybePeerAddr = do
       state = newEmptyState node
   messages <- newEmptyMVar
   _ <- forkIO $ receiveLoop messages receive
+  state' <- Bootstrap.run state send maybePeerAddr
   _ <- forkIO $ do
-    state' <- Bootstrap.run state send maybePeerAddr
     processLoop messages send state'
   return $ api messages
 

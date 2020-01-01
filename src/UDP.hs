@@ -3,7 +3,7 @@ module UDP (UDPAddr(..),protocol) where
 import Prelude hiding (lookup)
 
 import Control.Concurrent
-import Data.Map (empty,insert,lookup)
+import Data.Map (empty,insert,lookup,delete)
 import qualified Network.Socket as NS
 
 import Types
@@ -34,9 +34,13 @@ bindSocket bindAddress advertiseAddress kid = do
         modifyMVar_ mvar $ \active ->
           return $ insert requestKID respond active
 
-  let getRequest requestKID =
+      getRequest requestKID =
         withMVar mvar $ \active ->
           return $ lookup requestKID active
+
+      cancel requestKID =
+        modifyMVar_ mvar $ \active ->
+          return $ delete requestKID active
 
   NS.bind socket $ NS.addrAddress addr
 
@@ -44,5 +48,6 @@ bindSocket bindAddress advertiseAddress kid = do
     advertiseAddress
     addRequest
     getRequest
+    cancel
     socket
     kid

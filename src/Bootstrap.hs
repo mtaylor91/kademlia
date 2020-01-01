@@ -25,7 +25,7 @@ run state send maybePeerAddress =
              { kBuckets = kBuckets state & element peerBucketIndex .~ b }
         _ -> do
           putStrLn $ "Unable to join: no response from " <> show peerAddress
-          threadDelay $ retryWaitSeconds * 100000
+          threadDelay $ retryWaitSeconds * 1000000
           run state send maybePeerAddress
     Nothing ->
       return state

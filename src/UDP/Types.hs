@@ -18,7 +18,7 @@ type RequestType = Word8
 type ResponseType = Word8
 
 
-type RespondUDP = Maybe (RPCResult UDPAddr) -> IO ()
+type RespondUDP = RPCResult UDPAddr -> IO ()
 
 
 data UDPAddr = UDPAddr
@@ -31,6 +31,7 @@ data UDPSocket = UDPSocket
   { socketAdvertiseAddress :: UDPAddr
   , socketAddActiveRequest :: KID -> RespondUDP -> IO ()
   , socketGetActiveRequest :: KID -> IO (Maybe RespondUDP)
+  , socketDeleteActiveRequest :: KID -> IO ()
   , socketUDPSocket :: NS.Socket
   , socketKID :: KID
   }
