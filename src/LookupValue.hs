@@ -55,7 +55,7 @@ run context kid = do
           misses = [ n | (n, Just (FoundNodes _)) <- lookupResults results ]
           nearMiss = take 1 $ sortOn (xor kid . nodeKID . nodeID) misses
           output = lookupOutput results
-      refreshAll (nodeID . localNode $ state) context seen
+      refreshAll context seen
       case (output, nearMiss) of
         (Just value, [node]) -> do
           _ <- sendNode context (Store kid value) node

@@ -33,10 +33,14 @@ start :: (Eq a, Show a) => Protocol a -> KID -> Maybe a -> IO (API a)
 start (Protocol addr send receive) kid maybePeerAddr = do
   let node = NodeInfo (NodeID kid) addr
       state = newEmptyState node
+
   messages <- newEmptyMVar
+
   _ <- forkIO $ receiveLoop messages receive
-  state' <- Bootstrap.run state send maybePeerAddr
-  _ <- forkIO $ processLoop messages send state'
+  _ <- forkIO $ processLoop messages send state
+
+  Bootstrap.run (Context send state $ update messages) maybePeerAddr
+
   return $ api messages
 
 

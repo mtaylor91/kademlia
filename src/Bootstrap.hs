@@ -1,38 +1,45 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 module Bootstrap (run) where
 
+import BucketRefresh (bucketRefresh)
 import Control.Concurrent (threadDelay)
-import Control.Lens
 import Routing (getBucketIndex)
 import Types
+
+import qualified LookupNode
 
 
 retryWaitSeconds :: Int
 retryWaitSeconds = 3
 
 
-run :: Show a => State a -> SendRPC a -> Maybe a -> IO (State a)
-run state send maybePeerAddress =
+run :: (Eq a, Show a) => Context a -> Maybe a -> IO ()
+run context maybePeerAddress =
   case maybePeerAddress of
     Just peerAddress ->
-      ping state send peerAddress
+      ping context peerAddress
     Nothing ->
-      return state
+      return ()
 
 
-ping :: Show a => State a -> SendRPC a -> a -> IO (State a)
-ping state send peerAddress = do
-  result <- send peerAddress Ping
+ping :: (Eq a, Show a) => Context a -> a -> IO ()
+ping context peerAddress = do
+  result <- (sendRPC context) peerAddress Ping
   case result of
-    Just (peer, Pong) ->
-      let peerKID = nodeKID $ nodeID peer
+    Just (peer, Pong) -> do
+      let localID = nodeID $ localNode $ localState context
           peerBucketIndex = getBucketIndex localID peerKID
-          b = peer : ( kBuckets state !! peerBucketIndex )
-       in return $ state
-         { kBuckets = kBuckets state & element peerBucketIndex .~ b }
+          peerKID = nodeKID $ nodeID peer
+      bucketRefresh context peerBucketIndex [peer]
+      bootstrap context
     _ -> do
       putStrLn $ "Unable to join: no response from " <> show peerAddress
       threadDelay $ retryWaitSeconds * 1000000
-      ping state send peerAddress
-  where
-    localID = nodeID $ localNode state
+      ping context peerAddress
+
+
+bootstrap :: Eq a => Context a -> IO ()
+bootstrap context = do
+  let kid = nodeKID $ nodeID $ localNode $ localState context
+  _ <- LookupNode.run context kid
+  return ()

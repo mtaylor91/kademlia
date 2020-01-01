@@ -10,9 +10,10 @@ import Routing
 import Types
 
 
-refreshAll :: NodeID -> Context a -> [NodeInfo a] -> IO ()
-refreshAll nid context nodes = do
-  let bi n = getBucketIndex nid $ (nodeKID . nodeID) n
+refreshAll :: Context a -> [NodeInfo a] -> IO ()
+refreshAll context nodes = do
+  let nid = nodeID $ localNode $ localState context
+      bi n = getBucketIndex nid $ (nodeKID . nodeID) n
       r ns = forkIO $ bucketRefresh context (bi (head ns)) ns
   sequence_ $ fmap r $ groupOn bi $ sortOn bi $ nodes
 
