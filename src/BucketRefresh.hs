@@ -35,8 +35,8 @@ pingNodes :: Context a -> [NodeInfo a] -> IO ([NodeInfo a], [NodeInfo a])
 pingNodes context nodes = do
   let send = sendNode context
   results <- mapConcurrently (send Ping) nodes
-  let liveNodes = [ n | (n, Just Pong) <- results ]
-      deadNodes = [ n | (n, Nothing) <- results ]
+  let liveNodes = [ n | Just (n, Pong) <- results ]
+      deadNodes = [ n | n <- nodes, not $ any (isNode n) liveNodes ]
   return (liveNodes, deadNodes)
 
 

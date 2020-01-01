@@ -108,7 +108,7 @@ isLocal :: Context a -> NodeInfo a -> Bool
 isLocal context node = (nodeID node) == (nodeID . localNode . localState) context
 
 
-sendNode :: Context a -> RPCRequest -> NodeInfo a -> IO (RPCResult a)
+sendNode :: Context a -> RPCRequest -> NodeInfo a -> IO (Maybe (RPCResult a))
 sendNode context request node = (sendRPC context) (nodeAddr node) request
 
 

@@ -13,8 +13,8 @@ run :: Eq a => Context a -> KID -> ByteString -> IO [NodeInfo a]
 run context kid value = do
   applyState context $ insertData kid value
   nearest <- LookupNode.run context kid
-  let local = ((localNode . localState $ context), Just (Stored kid))
+  let local = (localNode . localState $ context, Stored kid)
       remote = filter (not . isLocal context) nearest
   remoteResults <- mapConcurrently (sendNode context (Store kid value)) remote
-  let results = local : remoteResults
-  return [ node | (node, Just (Stored _)) <- results ]
+  let results = Just local : remoteResults
+  return [ node | Just (node, Stored _) <- results ]

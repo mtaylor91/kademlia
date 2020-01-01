@@ -75,13 +75,13 @@ data Context a = Context
   }
 
 
-type SendRPC a = a -> RPCRequest -> IO (RPCResult a)
+type SendRPC a = a -> RPCRequest -> IO (Maybe (RPCResult a))
 
 
 type RespondRPC a = RPCResponse a -> IO ()
 
 
-type RPCResult a = (NodeInfo a, Maybe (RPCResponse a))
+type RPCResult a = (NodeInfo a, RPCResponse a)
 
 
 type ReceiveRPC a = IO (NodeInfo a, RPCRequest, RespondRPC a)

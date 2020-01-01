@@ -22,14 +22,14 @@ data Message a
   | forall r. Update (UpdateFunction a r) ((r, State a) -> IO ())
 
 
-bootstrap :: Eq a => ProtocolBuilder a -> a -> Maybe a -> IO (API a)
+bootstrap :: (Eq a, Show a) => ProtocolBuilder a -> a -> Maybe a -> IO (API a)
 bootstrap builder localAddr maybePeerAddr = do
   kid <- randomKID
   protocol <- builder localAddr kid
   start protocol kid maybePeerAddr
 
 
-start :: Eq a => Protocol a -> KID -> Maybe a -> IO (API a)
+start :: (Eq a, Show a) => Protocol a -> KID -> Maybe a -> IO (API a)
 start (Protocol addr send receive) kid maybePeerAddr = do
   let node = NodeInfo (NodeID kid) addr
       state = newEmptyState node

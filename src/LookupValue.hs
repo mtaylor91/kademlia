@@ -82,14 +82,14 @@ performLookup :: Eq a =>
 performLookup context kid node = do
   result <- sendNode context (FindValue kid) node
   case result of
-    (node', Just (FoundValue value)) ->
+    Just (node', FoundValue value) ->
       let r = Just $ FoundValue value
           results = LookupResults kid [] [(node', r)] (Just value)
        in return ([], results)
-    (node', Just (FoundNodes nodes)) ->
+    Just (node', FoundNodes nodes) ->
       let r = Just $ FoundNodes nodes
           results = LookupResults kid nodes [(node', r)] Nothing
        in return (nodes, results)
-    (node', _) ->
-      let results = LookupResults kid [] [(node', Nothing)] Nothing
+    _ ->
+      let results = LookupResults kid [] [(node, Nothing)] Nothing
        in return ([], results)
