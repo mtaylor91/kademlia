@@ -5,7 +5,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.UTF8 as UTF8
 import Data.Word (Word8)
 
-import Kademlia.Core (createKID,kidBytes)
+import Kademlia.KID (createKID,kidBytes)
 import Kademlia.Types (KID,NodeID(..),NodeInfo(..),RPCRequest(..),RPCResponse(..))
 import Kademlia.UDP.Core
 import Kademlia.UDP.Types

@@ -9,6 +9,7 @@ import Control.Lens
 import Data.List
 
 import Kademlia.Core
+import Kademlia.KID
 import Kademlia.Types
 
 

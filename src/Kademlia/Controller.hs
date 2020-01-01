@@ -8,6 +8,7 @@ import Data.Map                 (lookup)
 
 import Kademlia.Core
 import Kademlia.BucketRefresh            (bucketRefresh)
+import Kademlia.KID
 import Kademlia.Routing                  (getBucketIndex,findNearestNodes)
 import Kademlia.Types
 

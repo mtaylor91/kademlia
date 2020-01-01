@@ -7,6 +7,7 @@ import Data.List
 
 import Kademlia.Core
 import Kademlia.BucketRefresh (refreshAll)
+import Kademlia.KID
 import Kademlia.ParallelProducer (until)
 import Kademlia.Routing (findNearestNodes)
 import Kademlia.Types hiding (LookupNode)
