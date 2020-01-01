@@ -36,8 +36,7 @@ start (Protocol addr send receive) kid maybePeerAddr = do
   messages <- newEmptyMVar
   _ <- forkIO $ receiveLoop messages receive
   state' <- Bootstrap.run state send maybePeerAddr
-  _ <- forkIO $ do
-    processLoop messages send state'
+  _ <- forkIO $ processLoop messages send state'
   return $ api messages
 
 
@@ -61,6 +60,20 @@ apiRequest messages request translate = do
   return $ translate result
 
 
+update :: MVar (Message a) -> UpdateFunction a r -> IO (r, State a)
+update messages u = do
+  resultMVar <- newEmptyMVar
+  putMVar messages $ Update u $ putMVar resultMVar
+  takeMVar resultMVar
+
+
+receiveLoop :: MVar (Message a) -> ReceiveRPC a -> IO ()
+receiveLoop messages receive = do
+  (nodestate, request, respond) <- receive
+  putMVar messages $ PeerRPC nodestate request respond
+  receiveLoop messages receive
+
+
 processLoop :: Eq a => MVar (Message a) -> (SendRPC a) -> (State a) -> IO ()
 processLoop messages send state = do
   let context = Context send state $ update messages
@@ -69,12 +82,7 @@ processLoop messages send state = do
     APICall request respond ->
       processAPICall context state request respond
     PeerRPC node request respond -> do
-      let local = localNode state
-          bi = getBucketIndex (nodeID local) $ (nodeKID . nodeID) node
-      _ <- forkIO $ bucketRefresh context bi [node]
-      (response, state') <- processRPC request state
-      respond response
-      return state'
+      processRPC context state node request respond
     Update u respond -> do
       let (r, state') = u state
       respond (r, state')
@@ -103,35 +111,30 @@ processAPICall context state request respond = do
       return state
 
 
-processRPC :: RPCRequest -> State a -> IO (RPCResponse a, State a)
-processRPC request state =
+processRPC ::
+  Context a -> State a -> NodeInfo a -> RPCRequest -> RespondRPC a ->
+    IO (State a)
+processRPC context state node request respond = do
+  {- Refresh sender's kBucket -}
+  let local = localNode state
+      bucketIndes = getBucketIndex (nodeID local) $ (nodeKID . nodeID) node
+  _ <- forkIO $ bucketRefresh context bucketIndes [node]
+  {- Handle RPC request -}
   case request of
-    Ping ->
-      return $ (Pong, state)
-    FindNodes (NodeID kid) ->
-      let nodes = findNearestNodes state kid kFactor
-       in return $ (FoundNodes nodes, state)
+    Ping -> do
+      respond Pong
+      return state
+    FindNodes (NodeID kid) -> do
+      respond $ FoundNodes $ findNearestNodes state kid kFactor
+      return state
     FindValue kid ->
       case lookup kid (localData state) of
-        Just value ->
-          return $ (FoundValue value, state)
-        Nothing ->
-          let nodes = findNearestNodes state kid kFactor
-           in return $ (FoundNodes nodes, state)
-    Store kid value ->
-      let state' = insertData kid value state
-       in return $ (Stored kid, state')
-
-
-receiveLoop :: MVar (Message a) -> ReceiveRPC a -> IO ()
-receiveLoop messages receive = do
-  (nodestate, request, respond) <- receive
-  putMVar messages $ PeerRPC nodestate request respond
-  receiveLoop messages receive
-
-
-update :: MVar (Message a) -> UpdateFunction a r -> IO (r, State a)
-update messages u = do
-  resultMVar <- newEmptyMVar
-  putMVar messages $ Update u $ putMVar resultMVar
-  takeMVar resultMVar
+        Just value -> do
+          respond $ FoundValue value
+          return state
+        Nothing -> do
+          respond $ FoundNodes $ findNearestNodes state kid kFactor
+          return state
+    Store kid value -> do
+      respond $ Stored kid
+      return $ insertData kid value state
