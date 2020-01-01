@@ -1,2 +1,6 @@
-- Bootstrap self-lookup
-- retries
+- Implement proper bucket refreshes (lookup a random KID in each bucket)
+- Implement periodic bucket refreshes
+- Implement periodic key re-publishing
+- Architect key metadata handling
+- Architect centralized telemetry
+- Implement RPC retry mechanism
