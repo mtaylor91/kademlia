@@ -24,7 +24,7 @@ type RespondUDP = Maybe (RPCResult UDPAddr) -> IO ()
 data UDPAddr = UDPAddr
   { hostname :: HostName
   , udpPort :: UDPPort
-  } deriving (Eq,Show)
+  } deriving (Eq)
 
 
 data UDPSocket = UDPSocket
@@ -48,3 +48,7 @@ data UDPMessageData
   = UDPRequest RPCRequest
   | UDPResponse (RPCResponse UDPAddr)
   deriving (Eq,Show)
+
+
+instance Show UDPAddr where
+  show (UDPAddr host port) = "udp://" <> host <> ":" <> port

@@ -100,9 +100,9 @@ startAPI = do
   let udp = UDP.protocol bind
   api <- Protocol.bootstrap udp addr join
 
-  putStrLn $ "Listening on udp://" <> hostname bind <> ":" <> udpPort bind
+  putStrLn $ "Listening on " <> show bind
   if addr == bind then return () else do
-    putStrLn $ "Advertising udp://" <> hostname addr <> ":" <> udpPort addr
+    putStrLn $ "Advertising on " <> show addr
 
   return api
 
