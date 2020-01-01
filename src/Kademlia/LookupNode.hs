@@ -6,7 +6,7 @@ import Prelude hiding (until)
 import Data.List
 
 import Kademlia.Core
-import Kademlia.BucketRefresh (refreshAll)
+import Kademlia.BucketUpdate (updateBuckets)
 import Kademlia.KID
 import Kademlia.ParallelProducer (until)
 import Kademlia.Routing (findNearestNodes)
@@ -43,7 +43,7 @@ run context kid = do
   results <- runLookup context kid nodes
   let seen = [ n | (n, Just _) <- lookupResults results ]
       nodes' = lookupNearest results
-  refreshAll context seen
+  updateBuckets context seen
   return nodes'
 
 

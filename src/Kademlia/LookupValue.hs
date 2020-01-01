@@ -7,7 +7,7 @@ import Data.List (nubBy,sortOn)
 import Data.Map (lookup)
 
 import Kademlia.Core
-import Kademlia.BucketRefresh (refreshAll)
+import Kademlia.BucketUpdate (updateBuckets)
 import Kademlia.KID
 import Kademlia.ParallelProducer (until)
 import Kademlia.Routing (findNearestNodes)
@@ -56,7 +56,7 @@ run context kid = do
           misses = [ n | (n, Just (FoundNodes _)) <- lookupResults results ]
           nearMiss = take 1 $ sortOn (xor kid . nodeKID . nodeID) misses
           output = lookupOutput results
-      refreshAll context seen
+      updateBuckets context seen
       case (output, nearMiss) of
         (Just value, [node]) -> do
           _ <- sendNode context (Store kid value) node

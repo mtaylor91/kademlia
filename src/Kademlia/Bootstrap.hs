@@ -3,7 +3,7 @@ module Kademlia.Bootstrap (run) where
 
 import Control.Concurrent (threadDelay)
 
-import Kademlia.BucketRefresh (bucketRefresh)
+import Kademlia.BucketUpdate (bucketUpdate)
 import Kademlia.Routing (getBucketIndex)
 import Kademlia.Types
 
@@ -31,7 +31,7 @@ ping context peerAddress = do
       let localID = nodeID $ localNode $ localState context
           peerBucketIndex = getBucketIndex localID peerKID
           peerKID = nodeKID $ nodeID peer
-      bucketRefresh context peerBucketIndex [peer]
+      bucketUpdate context peerBucketIndex [peer]
       bootstrap context
     _ -> do
       putStrLn $ "Unable to join: no response from " <> show peerAddress

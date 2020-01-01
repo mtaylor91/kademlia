@@ -7,7 +7,7 @@ import Control.Concurrent       (MVar,newEmptyMVar,takeMVar,putMVar,forkIO)
 import Data.Map                 (lookup)
 
 import Kademlia.Core
-import Kademlia.BucketRefresh            (bucketRefresh)
+import Kademlia.BucketUpdate             (bucketUpdate)
 import Kademlia.KID
 import Kademlia.Routing                  (getBucketIndex,findNearestNodes)
 import Kademlia.Types
@@ -124,7 +124,7 @@ processRPC context state node request respond = do
   {- Refresh sender's kBucket -}
   let local = localNode state
       bucketIndes = getBucketIndex (nodeID local) $ (nodeKID . nodeID) node
-  _ <- forkIO $ bucketRefresh context bucketIndes [node]
+  _ <- forkIO $ bucketUpdate context bucketIndes [node]
   {- Handle RPC request -}
   case request of
     Ping -> do

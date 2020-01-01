@@ -6,7 +6,7 @@ import System.Environment
 import qualified Kademlia.Controller as Controller
 import qualified Kademlia.UDP as UDP
 
-import Kademlia
+import Kademlia()
 import Kademlia.Types
 import Kademlia.UDP.Types
 
