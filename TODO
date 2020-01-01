@@ -1,6 +1,10 @@
 - Implement proper bucket refreshes (lookup a random KID in each bucket)
+- Implement proper cache abstraction
 - Implement periodic bucket refreshes
 - Implement periodic key re-publishing
-- Architect key metadata handling
-- Architect centralized telemetry
 - Implement RPC retry mechanism
+- Architect metadata handling
+- Implement data cache eviction
+- Implement data cache expiration
+- Architect centralized telemetry
+- Implement peer status monitoring
