@@ -6,6 +6,7 @@ import System.Environment
 import qualified Protocol
 import qualified UDP
 
+import Types
 import UDP.Types
 
 
@@ -18,7 +19,7 @@ defaultLocalPort = "5000"
 
 
 defaultBootstrapHost :: String
-defaultBootstrapHost = "5000"
+defaultBootstrapHost = "localhost"
 
 
 defaultBootstrapPort :: String
@@ -75,35 +76,41 @@ advertiseAddress = do
   return $ UDPAddr host port
 
 
-bootstrapAddress :: IO UDPAddr
+bootstrapAddress :: IO (Maybe UDPAddr)
 bootstrapAddress = do
-  host <- envOrDefault [envBootstrapHost] defaultBootstrapHost
-  port <- envOrDefault [envBootstrapPort] defaultBootstrapPort
-  return $ UDPAddr host port
-
-
-bootstrapSuppress :: IO Bool
-bootstrapSuppress = do
   maybeValue <- lookupEnv envBootstrapSuppress
   case maybeValue of
     Just value ->
-      if fmap toUpper value == "FALSE" then return False else return True
+      if fmap toUpper value /= "FALSE" then return Nothing else addr
     Nothing ->
-      return False
+      addr
+  where
+    addr = do
+      host <- envOrDefault [envBootstrapHost] defaultBootstrapHost
+      port <- envOrDefault [envBootstrapPort] defaultBootstrapPort
+      return $ Just $ UDPAddr host port
 
 
-main :: IO ()
-main = do
+startAPI :: IO (API UDPAddr)
+startAPI = do
   bind <- bindAddress
   addr <- advertiseAddress
   join <- bootstrapAddress
 
   let udp = UDP.protocol bind
-  api <- Protocol.bootstrap udp addr $ Just join
+  api <- Protocol.bootstrap udp addr join
 
   putStrLn $ "Listening on udp://" <> hostname bind <> ":" <> udpPort bind
   if addr == bind then return () else do
     putStrLn $ "Advertising udp://" <> hostname addr <> ":" <> udpPort addr
+
+  return api
+
+
+main :: IO ()
+main = do
+  api <- startAPI
+  return ()
 
 
 envOrDefault :: [String] -> String -> IO String

@@ -1,5 +1,6 @@
 module UDP.Encoding where
 
+import Basement.Block (cast,singleton)
 import Basement.Compat.IsList
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LBS
@@ -22,8 +23,8 @@ encode message =
 
 
 encodeKID :: KID -> BSB.Builder
-encodeKID (KID kidBlock) =
-  mconcat $ fmap BSB.word8 $ toList kidBlock
+encodeKID (KID w256) =
+  mconcat $ fmap BSB.word8 $ toList $ cast $ singleton w256
 
 
 encodeAddr :: UDPAddr -> BSB.Builder

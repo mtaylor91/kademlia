@@ -2,15 +2,13 @@
 {-# LANGUAGE RankNTypes, LiberalTypeSynonyms #-}
 module Types where
 
-import Basement.Block   (Block)
-import Data.ByteArray   (ByteArray,ByteArrayAccess)
-import Data.ByteString  (ByteString)
-import Data.Map         (Map)
-import Data.Word        (Word8)
+import Basement.Types.Word256   (Word256)
+import Data.ByteString          (ByteString)
+import Data.Map                 (Map)
 
 
-newtype KID = KID (Block Word8)
-  deriving (Eq,Ord,Monoid,Semigroup,ByteArray,ByteArrayAccess,Show)
+newtype KID = KID Word256
+  deriving (Eq,Ord,Show)
 
 
 newtype NodeID = NodeID { nodeKID :: KID } deriving (Eq,Ord,Show)
@@ -54,7 +52,7 @@ data RPCResponse a
   | FoundNodes [NodeInfo a]
   | FoundValue ByteString
   | Stored KID
-  deriving (Show)
+  deriving (Eq,Show)
 
 
 data NodeInfo a = NodeInfo

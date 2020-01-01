@@ -1,8 +1,10 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 module Routing where
 
-import Data.Bits (testBit)
-import Data.ByteArray (index)
+import Prelude hiding (toInteger)
+
+import Basement.Bits (countLeadingZeros)
+import Basement.Numerical.Number (toInteger)
 import Data.List
 
 import Core
@@ -11,20 +13,7 @@ import Types
 
 getBucketIndex :: NodeID -> KID -> Int
 getBucketIndex (NodeID nodekid) kid =
-  firstNonZeroIndex [startIndex..endIndex]
-    where
-      startIndex :: Int = 0
-      endIndex :: Int = kidBits - 1
-      distance :: KID = xor kid nodekid
-      firstNonZeroIndex x =
-        case x of
-          [] ->
-            endIndex
-          (i:indices') ->
-            let w8 = index distance $ div i 8
-            in if not $ testBit w8 $ 7 - rem i 8
-                  then firstNonZeroIndex indices'
-                  else i
+  (fromInteger $ toInteger $ countLeadingZeros $ xor nodekid kid) - 1
 
 
 findNearestNodes :: State a -> KID -> Int -> [NodeInfo a]

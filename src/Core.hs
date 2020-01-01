@@ -3,15 +3,16 @@ module Core where
 
 import Prelude hiding (length,toInteger)
 
-import Basement.Block   (create,createFromPtr)
-import Basement.Types.OffsetSize (CountOf(..))
+import Basement.Block (Block,cast,createFromPtr,index)
+import Basement.Types.OffsetSize (CountOf(..),Offset(..))
+import Basement.Types.Word256 (Word256,bitwiseXor)
 import Control.Lens hiding (Context,index)
-import Crypto.Hash      (Digest,SHA256,hash)
+import Crypto.Hash (Digest,SHA256,hash)
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
-import Data.Map         (empty,insert)
-import Data.Word        (Word8)
-import System.Random    (getStdGen,setStdGen,random)
+import Data.Map (empty,insert)
+import Data.Word (Word8)
+import System.Random (getStdGen,setStdGen,random)
 
 import Types
 
@@ -29,23 +30,30 @@ kidBytes = kFactor
 
 
 emptyKID :: KID
-emptyKID = KID $ create (CountOf kidBytes) (\_ -> 0 :: Word8)
+emptyKID = KID 0
 
 
 createKID :: BS.ByteString -> Maybe KID
 createKID bytes = if BS.length bytes < kidBytes then Nothing else
-  Just $ KID $ BA.convert $ BS.take kidBytes bytes
+  let bytes' :: Block Word8 = BA.convert $ BS.take kidBytes bytes
+   in Just $ KID $ index (cast bytes') (Offset 0)
 
 
 randomKID :: IO KID
 randomKID = do
   gen <- getStdGen
+
   let (bytes, gen') = foldl genRandom ([], gen) $ take kidBytes $ repeat ()
-  let packed :: BA.Bytes = BA.pack bytes
-  b <- BA.withByteArray packed $ \p -> createFromPtr p $ CountOf kidBytes
+
+  buffer <- BA.withByteArray (BA.pack bytes :: BA.Bytes) $ \p ->
+    (createFromPtr p $ CountOf kidBytes) :: IO (Block Word256)
+
   setStdGen gen'
-  return $ KID b
+
+  return $ KID $ index buffer (Offset 0)
+
     where
+
       genRandom (accum, gen) () =
         let (r :: Word8, gen') = random gen
          in (r:accum, gen')
@@ -55,8 +63,9 @@ randomKID = do
 sha256KID :: BS.ByteString -> IO KID
 sha256KID input = do
   let d :: Digest SHA256 = hash input
-  b <- BA.withByteArray d $ \p -> createFromPtr p $ CountOf kidBytes
-  return $ KID b
+  buffer <- BA.withByteArray d $ \p ->
+    (createFromPtr p $ CountOf kidBytes) :: IO (Block Word256)
+  return $ KID $ index buffer (Offset 0)
 
 
 newEmptyState :: NodeInfo a -> State a
@@ -91,8 +100,8 @@ isNode :: NodeInfo a -> NodeInfo b -> Bool
 isNode n0 n1 = nodeID n0 == nodeID n1
 
 
-xor :: KID -> KID -> KID
-xor k k' = BA.xor k k'
+xor :: KID -> KID -> Word256
+xor (KID k) (KID k') = bitwiseXor k k'
 
 
 isLocal :: Context a -> NodeInfo a -> Bool

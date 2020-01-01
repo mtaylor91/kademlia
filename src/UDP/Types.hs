@@ -38,10 +38,10 @@ data UDPMessage = UDPMessage
   , udpSourceKID :: KID
   , udpSourceAddr :: UDPAddr
   , udpMessageData :: UDPMessageData
-  } deriving (Show)
+  } deriving (Eq,Show)
 
 
 data UDPMessageData
   = UDPRequest RPCRequest
   | UDPResponse (RPCResponse UDPAddr)
-  deriving (Show)
+  deriving (Eq,Show)
