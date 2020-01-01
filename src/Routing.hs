@@ -5,6 +5,7 @@ import Prelude hiding (toInteger)
 
 import Basement.Bits (countLeadingZeros)
 import Basement.Numerical.Number (toInteger)
+import Control.Lens
 import Data.List
 
 import Core
@@ -41,3 +42,31 @@ findNearestNodes state kid maxResults =
           sortAndFilter accum
     sortAndFilter results =
       take maxResults $ sortOn (xor kid . nodeKID . nodeID) results
+
+
+updateNodes :: Int -> [NodeInfo a] -> State a -> ([NodeInfo a], State a)
+updateNodes bi ns s =
+  foldl u ([], s) ns
+  where
+    u (skipped, state) n =
+      let bs = kBuckets state
+          b = bs !! bi
+          f n' = nodeID n == nodeID n'
+       in case (findIndex f b, length b) of
+            (Just i, _) ->
+              let b' = b & element i .~ n
+               in (skipped, updateBucket state b' bi)
+            (Nothing, l) | l < kFactor ->
+              let b' = b ++ [n]
+               in (skipped, updateBucket state b' bi)
+            (Nothing, _) ->
+              (n:skipped, state)
+
+
+removeNodes :: Int -> [NodeInfo a] -> State a -> ([NodeInfo a], State a)
+removeNodes bi nodes state =
+  let bs = kBuckets state
+      b = bs !! bi
+      f n = not $ any (isNode n) nodes
+      b' = filter f b
+   in (b', state { kBuckets = bs & element bi .~ b' })
