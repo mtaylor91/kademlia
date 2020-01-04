@@ -1,13 +1,12 @@
 module Kademlia.UDP.Encoding where
 
-import Basement.Block (cast,singleton)
-import Basement.Compat.IsList
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.UTF8 as UTF8
 
-import Kademlia.Types (KID(..),NodeID(..),NodeInfo(..),RPCRequest(..),RPCResponse(..))
+import Kademlia.KID (encodeKID)
+import Kademlia.Types (NodeID(..),NodeInfo(..),RPCRequest(..),RPCResponse(..))
 import Kademlia.UDP.Core
 import Kademlia.UDP.Types
 
@@ -20,11 +19,6 @@ encode message =
     , encodeAddr $ udpSourceAddr message
     , encodeData $ udpMessageData message
     ]
-
-
-encodeKID :: KID -> BSB.Builder
-encodeKID (KID w256) =
-  mconcat $ fmap BSB.word8 $ toList $ cast $ singleton w256
 
 
 encodeAddr :: UDPAddr -> BSB.Builder

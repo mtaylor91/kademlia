@@ -3,12 +3,13 @@
 module Kademlia.Types where
 
 import Basement.Types.Word256   (Word256)
+import Data.Bits                (Bits)
 import Data.ByteString          (ByteString)
 import Data.Map                 (Map)
 
 
-newtype KID = KID Word256
-  deriving (Eq,Ord,Show)
+newtype KID = KID { word256 :: Word256 }
+  deriving (Eq,Ord,Show,Bits,Num)
 
 
 newtype NodeID = NodeID { nodeKID :: KID } deriving (Eq,Ord,Show)

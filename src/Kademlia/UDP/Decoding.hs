@@ -5,10 +5,10 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.UTF8 as UTF8
 import Data.Word (Word8)
 
-import Kademlia.KID (createKID,kidBytes)
 import Kademlia.Types (KID,NodeID(..),NodeInfo(..),RPCRequest(..),RPCResponse(..))
 import Kademlia.UDP.Core
 import Kademlia.UDP.Types
+import qualified Kademlia.KID as KID
 
 
 newtype Decoder a = Decoder (BS.ByteString -> Maybe (a, BS.ByteString))
@@ -112,8 +112,8 @@ decodeNode = do
 
 decodeKID :: Decoder KID
 decodeKID = Decoder $ \bytes -> do
-  kid <- createKID bytes
-  return (kid, BS.drop kidBytes bytes)
+  kid <- KID.decodeKID bytes
+  return (kid, BS.drop KID.kidBytes bytes)
 
 
 decodeAddr :: Decoder UDPAddr
