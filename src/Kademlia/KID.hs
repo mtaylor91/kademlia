@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 module Kademlia.KID where
 
@@ -9,12 +10,15 @@ import Basement.Types.Word256 (Word256(..),bitwiseXor)
 import Crypto.Hash (Digest,SHA256,hash)
 import Data.Binary.Get (Get,getWord64be,runGet)
 import Data.Bits
+import Data.Hex (unhex)
 import Data.Word (Word8)
 import System.Random (getStdGen,setStdGen,random)
+import Text.Printf (printf)
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as LBS
+import qualified Data.ByteString.Lazy.Char8 as C8BS
 
 import Kademlia.Types
 
@@ -33,6 +37,19 @@ emptyKID = KID 0
 
 filledKID :: KID
 filledKID = KID $ 2^kidBits-1
+
+
+fromHex :: BS.ByteString -> Maybe KID
+fromHex bs = do
+  bytes <- unhex bs
+  decodeKID bytes
+
+
+toHex :: KID -> LBS.ByteString
+toHex k =
+  LBS.foldr f "" $ BSB.toLazyByteString $ encodeKID k where
+    f i a = LBS.append (s i) a
+    s i = C8BS.pack $ printf "%02x" i
 
 
 encodeKID :: KID -> BSB.Builder

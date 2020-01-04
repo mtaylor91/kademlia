@@ -6,7 +6,7 @@ import System.Environment
 import qualified Kademlia.Controller as Controller
 import qualified Kademlia.UDP as UDP
 
-import Kademlia()
+import Kademlia.API
 import Kademlia.Types
 import Kademlia.UDP.Types
 
@@ -35,12 +35,20 @@ envPort :: String
 envPort = "PORT"
 
 
-envBindHost :: String
-envBindHost = "BIND_HOST"
+envAPIHost :: String
+envAPIHost = "API_HOST"
 
 
-envBindPort :: String
-envBindPort = "BIND_PORT"
+envAPIPort :: String
+envAPIPort = "API_PORT"
+
+
+envDHTHost :: String
+envDHTHost = "DHT_HOST"
+
+
+envDHTPort :: String
+envDHTPort = "DHT_PORT"
 
 
 envAdvertiseHost :: String
@@ -65,8 +73,8 @@ envBootstrapSuppress = "BOOTSTRAP_SUPPRESS"
 
 bindAddress :: IO UDPAddr
 bindAddress = do
-  host <- envOrDefault [envBindHost, envHost] defaultLocalHost
-  port <- envOrDefault [envBindPort, envPort] defaultLocalPort
+  host <- envOrDefault [envDHTHost, envHost] defaultLocalHost
+  port <- envOrDefault [envDHTPort, envPort] defaultLocalPort
   return $ UDPAddr host port
 
 
@@ -110,8 +118,11 @@ startAPI = do
 
 main :: IO ()
 main = do
+  apiPortS <- envOrDefault [envAPIPort, envPort] defaultLocalPort
+  let apiPort = read apiPortS
   api <- startAPI
-  return ()
+  putStrLn $ "Starting API server at http://localhost:" <> apiPortS
+  expose api apiPort
 
 
 envOrDefault :: [String] -> String -> IO String
