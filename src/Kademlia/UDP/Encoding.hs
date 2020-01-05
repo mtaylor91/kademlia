@@ -6,7 +6,8 @@ import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.UTF8 as UTF8
 
 import Kademlia.KID (encodeKID)
-import Kademlia.Types (NodeID(..),NodeInfo(..),RPCRequest(..),RPCResponse(..))
+import Kademlia.NodeInfo (NodeInfo(..))
+import Kademlia.RPC (RPCRequest(..),RPCResponse(..))
 import Kademlia.UDP.Core
 import Kademlia.UDP.Types
 
@@ -45,7 +46,7 @@ encodeRequest request =
   case request of
     Ping ->
       BSB.word8 requestTypePing
-    FindNodes (NodeID kid) ->
+    FindNodes kid ->
       mconcat
         [ BSB.word8 requestTypeFindNodes
         , encodeKID kid
@@ -88,4 +89,4 @@ encodeResponse response =
 
 
 encodeNode :: NodeInfo UDPAddr -> BSB.Builder
-encodeNode (NodeInfo (NodeID kid) addr) = encodeKID kid <> encodeAddr addr
+encodeNode (NodeInfo kid addr) = encodeKID kid <> encodeAddr addr

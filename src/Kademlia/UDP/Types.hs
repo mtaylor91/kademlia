@@ -3,7 +3,8 @@ module Kademlia.UDP.Types where
 import Data.Word (Word8)
 import qualified Network.Socket as NS
 
-import Kademlia.Types
+import Kademlia.KID (KID)
+import Kademlia.RPC (RPCRequest,RPCResponse,RPCResult)
 
 
 type HostName = NS.HostName

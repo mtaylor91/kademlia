@@ -6,7 +6,8 @@ import Control.Concurrent
 import Data.Map (empty,insert,lookup,delete)
 import qualified Network.Socket as NS
 
-import Kademlia.Types
+import Kademlia.KID
+import Kademlia.RPC
 import Kademlia.UDP.Core
 import Kademlia.UDP.Receive
 import Kademlia.UDP.Send

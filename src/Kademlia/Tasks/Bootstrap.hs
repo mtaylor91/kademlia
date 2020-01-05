@@ -1,13 +1,16 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-module Kademlia.Bootstrap (run) where
+module Kademlia.Tasks.Bootstrap (run) where
 
 import Control.Concurrent (threadDelay)
 
-import Kademlia.BucketUpdate (bucketUpdate)
-import Kademlia.Routing (getBucketIndex)
-import Kademlia.Types
+import Kademlia.Controller.Context (Context(..))
+import Kademlia.Controller.State (localNode)
+import Kademlia.KID (getBucketIndex)
+import Kademlia.NodeInfo (NodeInfo(..))
+import Kademlia.RPC (RPCRequest(Ping),RPCResponse(Pong))
+import Kademlia.Tasks.BucketUpdate (updateBucket)
 
-import qualified Kademlia.LookupNode as LookupNode
+import qualified Kademlia.Tasks.LookupNode as LookupNode
 
 
 retryWaitSeconds :: Int
@@ -29,9 +32,8 @@ ping context peerAddress = do
   case result of
     Just (peer, Pong) -> do
       let localID = nodeID $ localNode $ localState context
-          peerBucketIndex = getBucketIndex localID peerKID
-          peerKID = nodeKID $ nodeID peer
-      bucketUpdate context peerBucketIndex [peer]
+          peerBucketIndex = getBucketIndex localID $ nodeID peer
+      updateBucket context peerBucketIndex [peer]
       bootstrap context
     _ -> do
       putStrLn $ "Unable to join: no response from " <> show peerAddress
@@ -41,6 +43,6 @@ ping context peerAddress = do
 
 bootstrap :: Eq a => Context a -> IO ()
 bootstrap context = do
-  let kid = nodeKID $ nodeID $ localNode $ localState context
+  let kid = nodeID $ localNode $ localState context
   _ <- LookupNode.run context kid
   return ()

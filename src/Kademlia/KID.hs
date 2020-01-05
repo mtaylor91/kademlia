@@ -1,15 +1,19 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 module Kademlia.KID where
 
-import Basement.Bits (isBitSet)
+import Prelude hiding (toInteger)
+
+import Basement.Bits (countLeadingZeros,isBitSet)
 import Basement.Block (Block(..),cast,createFromPtr,index,singleton)
 import Basement.Compat.IsList (toList)
+import Basement.Numerical.Number (toInteger)
 import Basement.Types.OffsetSize (CountOf(..),Offset(..))
 import Basement.Types.Word256 (Word256(..),bitwiseXor)
 import Crypto.Hash (Digest,SHA256,hash)
 import Data.Binary.Get (Get,getWord64be,runGet)
-import Data.Bits
+import Data.Bits hiding (countLeadingZeros,xor)
 import Data.Hex (unhex)
 import Data.Word (Word8)
 import System.Random (getStdGen,setStdGen,random)
@@ -20,7 +24,9 @@ import qualified Data.ByteString.Builder as BSB
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString.Lazy.Char8 as C8BS
 
-import Kademlia.Types
+
+newtype KID = KID { word256 :: Word256 }
+  deriving (Eq,Ord,Show,Bits,Num)
 
 
 kidBits :: Int
@@ -29,6 +35,11 @@ kidBits = kidBytes * 8
 
 kidBytes :: Int
 kidBytes = 32
+
+
+getBucketIndex :: KID -> KID -> Int
+getBucketIndex nodekid kid =
+  (fromInteger $ toInteger $ countLeadingZeros $ xor nodekid kid) - 1
 
 
 emptyKID :: KID
@@ -68,8 +79,8 @@ decodeKID bytes = if BS.length bytes < kidBytes then Nothing else
     return $ KID $ Word256 w64_0 w64_1 w64_2 w64_3
 
 
-bucketKID :: NodeID -> Int -> KID
-bucketKID (NodeID (KID w)) b =
+bucketKID :: KID -> Int -> KID
+bucketKID (KID w) b =
   if isBitSet w o then KID $ clearBit w i
                   else KID $ setBit w i
   where i = kidBits - 1 - b
@@ -114,9 +125,9 @@ randomKID = do
          in (r:accum, gen')
 
 
-randomKIDInBucket :: NodeID -> Int -> IO KID
-randomKIDInBucket nid bucketIndex = do
-  randomKIDWithPrefix (bucketKID nid bucketIndex) (bucketIndex + 1)
+randomKIDInBucket :: KID -> Int -> IO KID
+randomKIDInBucket kid bucketIndex = do
+  randomKIDWithPrefix (bucketKID kid bucketIndex) (bucketIndex + 1)
 
 
 randomKIDWithPrefix :: KID -> Int -> IO KID

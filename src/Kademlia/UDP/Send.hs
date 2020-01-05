@@ -7,7 +7,7 @@ import qualified Network.Socket.ByteString as NSBS
 import System.Timeout
 
 import Kademlia.KID (randomKID)
-import Kademlia.Types (SendRPC)
+import Kademlia.RPC (SendRPC)
 import Kademlia.UDP.Core
 import Kademlia.UDP.Encoding
 import Kademlia.UDP.Types

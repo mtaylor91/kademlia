@@ -1,12 +1,15 @@
-module Kademlia.InsertValue (run) where
+module Kademlia.Tasks.InsertValue (run) where
 
 import Control.Concurrent.Async (mapConcurrently)
 import Data.ByteString (ByteString)
 import Data.List (filter)
 
-import Kademlia.Core (applyState,insertData,isLocal,sendNode)
-import Kademlia.Types
-import qualified Kademlia.LookupNode as LookupNode
+import Kademlia.Controller.Context (Context,applyState,isLocal,localState,sendNode)
+import Kademlia.Controller.State (insertData,localNode)
+import Kademlia.KID (KID)
+import Kademlia.NodeInfo (NodeInfo)
+import Kademlia.RPC (RPCRequest(Store),RPCResponse(Stored))
+import qualified Kademlia.Tasks.LookupNode as LookupNode
 
 
 run :: Eq a => Context a -> KID -> ByteString -> IO [NodeInfo a]

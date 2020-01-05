@@ -1,21 +1,45 @@
-{-# LANGUAGE ScopedTypeVariables #-}
-module Kademlia.Routing where
+{-# LANGUAGE RankNTypes #-}
+module Kademlia.Controller.State where
 
-import Prelude hiding (toInteger)
-
-import Basement.Bits (countLeadingZeros)
-import Basement.Numerical.Number (toInteger)
 import Control.Lens
-import Data.List
+import Data.List                (findIndex,sortOn)
+import Data.Map                 (Map,empty,insert)
+import qualified Data.ByteString as BS
 
-import Kademlia.Core
-import Kademlia.KID
-import Kademlia.Types
+import Kademlia.KID             (KID,getBucketIndex,kidBits,kidBytes,xor)
+import Kademlia.NodeInfo        (NodeInfo,isNode,nodeID)
 
 
-getBucketIndex :: NodeID -> KID -> Int
-getBucketIndex (NodeID nodekid) kid =
-  (fromInteger $ toInteger $ countLeadingZeros $ xor nodekid kid) - 1
+data State a = State
+  { kBuckets :: [[NodeInfo a]]
+  , localData :: Map KID BS.ByteString
+  , localNode :: NodeInfo a
+  } deriving (Show)
+
+
+type UpdateFunction a r = State a -> (r, State a)
+
+
+type Update a = forall r. UpdateFunction a r -> IO (r, State a)
+
+
+newEmptyState :: NodeInfo a -> State a
+newEmptyState node = replaceBucket state [node] 255
+  where state = State
+          { kBuckets = take kidBits $ repeat []
+          , localData = empty
+          , localNode = node
+          }
+
+
+insertData :: KID -> BS.ByteString -> State a -> State a
+insertData kid value state =
+  state { localData = insert kid value $ localData state }
+
+
+replaceBucket :: State a -> [NodeInfo a] -> Int -> State a
+replaceBucket state bucket i =
+  state { kBuckets = kBuckets state & element i .~ bucket }
 
 
 findNearestNodes :: State a -> KID -> Int -> [NodeInfo a]
@@ -42,7 +66,7 @@ findNearestNodes state kid maxResults =
         (_, _) ->
           sortAndFilter accum
     sortAndFilter results =
-      take maxResults $ sortOn (xor kid . nodeKID . nodeID) results
+      take maxResults $ sortOn (xor kid . nodeID) results
 
 
 updateNodes :: Int -> [NodeInfo a] -> State a -> ([NodeInfo a], State a)
@@ -56,10 +80,10 @@ updateNodes bi ns s =
        in case (findIndex f b, length b) of
             (Just i, _) ->
               let b' = b & element i .~ n
-               in (skipped, updateBucket state b' bi)
-            (Nothing, l) | l < kFactor ->
+               in (skipped, replaceBucket state b' bi)
+            (Nothing, l) | l < kidBytes ->
               let b' = b ++ [n]
-               in (skipped, updateBucket state b' bi)
+               in (skipped, replaceBucket state b' bi)
             (Nothing, _) ->
               (n:skipped, state)
 

@@ -1,16 +1,17 @@
 {-# LANGUAGE RankNTypes #-}
-module Kademlia.LookupNode (run) where
+module Kademlia.Tasks.LookupNode (run) where
 
 import Prelude hiding (until)
 
 import Data.List
 
-import Kademlia.Core
-import Kademlia.BucketUpdate (updateBuckets)
+import Kademlia.Controller.Context
+import Kademlia.Controller.State
 import Kademlia.KID
+import Kademlia.NodeInfo (NodeInfo(..),isNode)
 import Kademlia.ParallelProducer (until)
-import Kademlia.Routing (findNearestNodes)
-import Kademlia.Types hiding (LookupNode)
+import Kademlia.RPC
+import Kademlia.Tasks.BucketUpdate (updateBuckets)
 
 
 data LookupResults a = LookupResults
@@ -27,7 +28,7 @@ instance Semigroup (LookupResults a) where
     , lookupResults = r <> r'
     } where
       n'' =
-        take kFactor $ sortOn (xor t . nodeKID . nodeID) $
+        take kidBytes $ sortOn (xor t . nodeID) $
         nubBy isNode $ sortOn nodeID $ n <> n'
 
 
@@ -39,7 +40,7 @@ instance Monoid (LookupResults a) where
 run :: Eq a => Context a -> KID -> IO [NodeInfo a]
 run context kid = do
   state <- getState context
-  let nodes = findNearestNodes state kid kFactor
+  let nodes = findNearestNodes state kid kidBytes
   results <- runLookup context kid nodes
   let seen = [ n | (n, Just _) <- lookupResults results ]
       nodes' = lookupNearest results
@@ -49,7 +50,7 @@ run context kid = do
 
 runLookup :: Eq a => Context a -> KID -> [NodeInfo a] -> IO (LookupResults a)
 runLookup context kid nodes =
-  until lookupFinished (performLookup context kid) kFactor nodes
+  until lookupFinished (performLookup context kid) kidBytes nodes
 
 
 lookupFinished :: Eq a => LookupResults a -> LookupResults a -> Bool
@@ -59,7 +60,7 @@ lookupFinished lr lr' = (lookupNearest lr) /= (lookupNearest lr')
 performLookup :: Eq a =>
   Context a -> KID -> NodeInfo a -> IO ([NodeInfo a], LookupResults a)
 performLookup context kid node = do
-  result <- sendNode context (FindNodes $ NodeID kid) node
+  result <- sendNode context (FindNodes kid) node
   case result of
     Just (node', FoundNodes nodes) ->
       return (nodes, LookupResults kid nodes [(node', Just nodes)])

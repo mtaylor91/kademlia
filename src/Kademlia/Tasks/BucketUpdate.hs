@@ -1,25 +1,27 @@
-module Kademlia.BucketUpdate (bucketUpdate,updateBuckets) where
+module Kademlia.Tasks.BucketUpdate (updateBucket,updateBuckets) where
 
 import Control.Concurrent
 import Control.Concurrent.Async (mapConcurrently)
 import Data.List
 import Data.List.Extra
 
-import Kademlia.Core
-import Kademlia.Routing
-import Kademlia.Types
+import Kademlia.Controller.Context      (Context,localState,sendNode,updateLocalState)
+import Kademlia.Controller.State        (kBuckets,localNode,removeNodes,updateNodes)
+import Kademlia.KID                     (getBucketIndex)
+import Kademlia.NodeInfo                (NodeInfo,isNode,nodeID)
+import Kademlia.RPC                     (RPCRequest(Ping),RPCResponse(Pong))
 
 
 updateBuckets :: Context a -> [NodeInfo a] -> IO ()
 updateBuckets context nodes = do
   let nid = nodeID $ localNode $ localState context
-      bi n = getBucketIndex nid $ (nodeKID . nodeID) n
-      r ns = forkIO $ bucketUpdate context (bi (head ns)) ns
+      bi n = getBucketIndex nid $ nodeID n
+      r ns = forkIO $ updateBucket context (bi (head ns)) ns
   sequence_ $ fmap r $ groupOn bi $ sortOn bi $ nodes
 
 
-bucketUpdate :: Context a -> Int -> [NodeInfo a] -> IO ()
-bucketUpdate context bi nodes = do
+updateBucket :: Context a -> Int -> [NodeInfo a] -> IO ()
+updateBucket context bi nodes = do
   (skipped, state) <- (updateLocalState context) $ updateNodes bi nodes
   if length skipped == 0 then return () else do
     let bs = kBuckets state

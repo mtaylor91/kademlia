@@ -1,4 +1,4 @@
-module Kademlia.LookupValue (run) where
+module Kademlia.Tasks.LookupValue (run) where
 
 import Prelude hiding (lookup,until)
 
@@ -6,12 +6,13 @@ import Data.ByteString (ByteString)
 import Data.List (nubBy,sortOn)
 import Data.Map (lookup)
 
-import Kademlia.Core
-import Kademlia.BucketUpdate (updateBuckets)
+import Kademlia.Controller.Context
+import Kademlia.Controller.State
 import Kademlia.KID
+import Kademlia.NodeInfo
 import Kademlia.ParallelProducer (until)
-import Kademlia.Routing (findNearestNodes)
-import Kademlia.Types
+import Kademlia.RPC
+import Kademlia.Tasks.BucketUpdate (updateBuckets)
 
 
 data LookupResults a = LookupResults
@@ -30,7 +31,7 @@ instance Semigroup (LookupResults a) where
     , lookupOutput = o''
     } where
       n'' =
-        take kFactor $ sortOn (xor t . nodeKID . nodeID) $
+        take kidBytes $ sortOn (xor t . nodeID) $
         nubBy isNode $ sortOn nodeID $ n <> n'
       o'' = case (o, o') of
               (Just _, _) -> o
@@ -50,11 +51,11 @@ run context kid = do
     Just value ->
       return $ Just value
     Nothing -> do
-      let nearest = findNearestNodes state kid kFactor
+      let nearest = findNearestNodes state kid kidBytes
       results <- runLookup context kid nearest
       let seen = [ n | (n, Just _) <- lookupResults results ]
           misses = [ n | (n, Just (FoundNodes _)) <- lookupResults results ]
-          nearMiss = take 1 $ sortOn (xor kid . nodeKID . nodeID) misses
+          nearMiss = take 1 $ sortOn (xor kid . nodeID) misses
           output = lookupOutput results
       updateBuckets context seen
       case (output, nearMiss) of
@@ -68,7 +69,7 @@ run context kid = do
 
 runLookup :: Eq a => Context a -> KID -> [NodeInfo a] -> IO (LookupResults a)
 runLookup context kid nodes =
-  until lookupFinished (performLookup context kid) kFactor nodes
+  until lookupFinished (performLookup context kid) kidBytes nodes
 
 
 lookupFinished :: Eq a => LookupResults a -> LookupResults a -> Bool

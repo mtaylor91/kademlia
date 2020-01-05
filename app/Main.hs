@@ -7,7 +7,8 @@ import qualified Kademlia.Controller as Controller
 import qualified Kademlia.UDP as UDP
 
 import Kademlia.API
-import Kademlia.Types
+import Kademlia.KID
+import Kademlia.HTTP
 import Kademlia.UDP.Types
 
 
@@ -107,7 +108,8 @@ startAPI = do
   join <- bootstrapAddress
 
   let udp = UDP.protocol bind
-  api <- Controller.bootstrap udp addr join
+  kid <- randomKID
+  api <- Controller.start kid udp addr join
 
   putStrLn $ "Listening on " <> show bind
   if addr == bind then return () else do
@@ -122,7 +124,7 @@ main = do
   let apiPort = read apiPortS
   api <- startAPI
   putStrLn $ "Starting API server at http://localhost:" <> apiPortS
-  expose api apiPort
+  server api apiPort
 
 
 envOrDefault :: [String] -> String -> IO String

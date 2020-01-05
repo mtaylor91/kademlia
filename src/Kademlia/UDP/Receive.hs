@@ -4,7 +4,8 @@ import qualified Data.ByteString.Lazy as LBS
 import qualified Network.Socket as NS
 import qualified Network.Socket.ByteString as NSBS
 
-import Kademlia.Types (NodeID(..),NodeInfo(..),ReceiveRPC,RPCRequest,RPCResponse)
+import Kademlia.NodeInfo (NodeInfo(..))
+import Kademlia.RPC (ReceiveRPC,RPCRequest,RPCResponse)
 import Kademlia.UDP.Core
 import Kademlia.UDP.Decoding
 import Kademlia.UDP.Encoding
@@ -30,7 +31,7 @@ receiveRequest ::
   UDPSocket -> UDPMessage -> RPCRequest -> NS.SockAddr -> ReceiveRPC UDPAddr
 receiveRequest s message request origin = do
   let sender = NodeInfo senderID senderAddr
-      senderID = NodeID $ udpSourceKID message
+      senderID = udpSourceKID message
       senderAddr = udpSourceAddr message
       respond response = do
         let response' =
@@ -49,9 +50,7 @@ receiveResponse s message response = do
   active <- (socketGetActiveRequest s) (udpRequestKID message)
   case active of
     Just respond -> do
-      let node = NodeInfo
-            (NodeID $ udpSourceKID message)
-            (udpSourceAddr message)
+      let node = NodeInfo (udpSourceKID message) (udpSourceAddr message)
       respond (node, response)
     Nothing ->
       return ()

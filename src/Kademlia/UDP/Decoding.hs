@@ -5,7 +5,9 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.UTF8 as UTF8
 import Data.Word (Word8)
 
-import Kademlia.Types (KID,NodeID(..),NodeInfo(..),RPCRequest(..),RPCResponse(..))
+import Kademlia.KID (KID)
+import Kademlia.NodeInfo (NodeInfo(..))
+import Kademlia.RPC (RPCRequest(..),RPCResponse(..))
 import Kademlia.UDP.Core
 import Kademlia.UDP.Types
 import qualified Kademlia.KID as KID
@@ -70,7 +72,7 @@ decodeData = do
 
     m | m == requestTypeFindNodes -> do
       kid <- decodeKID
-      return $ UDPRequest $ FindNodes (NodeID kid)
+      return $ UDPRequest $ FindNodes kid
 
     m | m == requestTypeFindValue -> do
       kid <- decodeKID
@@ -107,7 +109,7 @@ decodeNode :: Decoder (NodeInfo UDPAddr)
 decodeNode = do
   kid <- decodeKID
   addr <- decodeAddr
-  return $ NodeInfo (NodeID kid) addr
+  return $ NodeInfo kid addr
 
 
 decodeKID :: Decoder KID

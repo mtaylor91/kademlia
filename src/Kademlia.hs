@@ -2,8 +2,8 @@ module Kademlia where
 
 import qualified Data.ByteString as BS
 
+import Kademlia.API
 import Kademlia.KID
-import Kademlia.Types
 
 
 lookup :: API a -> KID -> IO (Maybe BS.ByteString)
