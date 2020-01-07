@@ -60,7 +60,7 @@ encodeRequest request =
       mconcat
         [ BSB.word8 requestTypeStore
         , encodeKID kid
-        , BSB.word8 $ fromIntegral $ BS.length value
+        , BSB.word64BE $ fromIntegral $ BS.length value
         , BSB.byteString value
         ]
 
@@ -78,7 +78,7 @@ encodeResponse response =
     FoundValue value ->
       mconcat
         [ BSB.word8 responseTypeFoundValue
-        , BSB.word8 $ fromIntegral $ BS.length value
+        , BSB.word64BE $ fromIntegral $ BS.length value
         , BSB.byteString value
         ]
     Stored kid ->

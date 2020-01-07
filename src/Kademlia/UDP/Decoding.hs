@@ -1,9 +1,11 @@
 module Kademlia.UDP.Decoding where
 
 import Control.Monad
+import Data.Binary.Get (runGet,getWord64be)
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString.UTF8 as UTF8
-import Data.Word (Word8)
+import Data.Word (Word8,Word64)
 
 import Kademlia.KID (KID)
 import Kademlia.NodeInfo (NodeInfo(..))
@@ -80,7 +82,7 @@ decodeData = do
 
     m | m == requestTypeStore -> do
       kid <- decodeKID
-      len <- decodeWord8
+      len <- decodeWord64BE
       value <- decodeBytes $ fromIntegral len
       return $ UDPRequest $ Store kid value
 
@@ -93,7 +95,7 @@ decodeData = do
       return $ UDPResponse $ FoundNodes nodes
 
     m | m == responseTypeFoundValue -> do
-      len <- decodeWord8
+      len <- decodeWord64BE
       value <- decodeBytes $ fromIntegral len
       return $ UDPResponse $ FoundValue value
 
@@ -147,3 +149,13 @@ decodeWord8 = Decoder $ \bytes ->
   case BS.length bytes of
     l | l >= 1 ->       Just (BS.index bytes 0, BS.drop 1 bytes)
     _ ->                Nothing
+
+
+decodeWord64BE :: Decoder Word64
+decodeWord64BE = Decoder $ \bytes ->
+  case BS.length bytes of
+    l | l >= 8 ->
+      let w64 = runGet getWord64be $ LBS.fromStrict bytes
+       in return (w64, BS.drop 8 bytes)
+    _ ->
+      Nothing
