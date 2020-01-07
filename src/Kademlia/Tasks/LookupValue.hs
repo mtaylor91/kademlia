@@ -74,9 +74,9 @@ runLookup context kid nodes =
 
 
 lookupFinished :: Eq a => LookupResults a -> LookupResults a -> Bool
-lookupFinished lr lr' =
-  case lookupOutput lr' of
-    Nothing -> (lookupNearest lr) /= (lookupNearest lr')
+lookupFinished oldResults newResults =
+  case lookupOutput newResults of
+    Nothing -> (lookupNearest oldResults) == (lookupNearest newResults)
     Just _ -> True
 
 

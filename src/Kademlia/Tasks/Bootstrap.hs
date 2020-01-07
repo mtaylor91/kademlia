@@ -10,6 +10,7 @@ import Kademlia.NodeInfo (NodeInfo(..))
 import Kademlia.RPC (RPCRequest(Ping),RPCResponse(Pong))
 import Kademlia.Tasks.BucketUpdate (updateBucket)
 
+import qualified Kademlia.Tasks.BucketRefresh as BucketRefresh
 import qualified Kademlia.Tasks.LookupNode as LookupNode
 
 
@@ -45,4 +46,5 @@ bootstrap :: Eq a => Context a -> IO ()
 bootstrap context = do
   let kid = nodeID $ localNode $ localState context
   _ <- LookupNode.run context kid
+  _ <- BucketRefresh.run context
   return ()

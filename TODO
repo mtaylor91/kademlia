@@ -1,4 +1,3 @@
-- Implement proper bucket refreshes (lookup a random KID in each bucket)
 - Implement periodic bucket refreshes
 - Implement periodic key re-publishing
 - Implement RPC retry mechanism

@@ -54,7 +54,7 @@ runLookup context kid nodes =
 
 
 lookupFinished :: Eq a => LookupResults a -> LookupResults a -> Bool
-lookupFinished lr lr' = (lookupNearest lr) /= (lookupNearest lr')
+lookupFinished prev new = (lookupNearest prev) == (lookupNearest new)
 
 
 performLookup :: Eq a =>

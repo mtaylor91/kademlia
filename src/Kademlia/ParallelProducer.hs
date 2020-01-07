@@ -8,13 +8,13 @@ import Control.Concurrent.Async (Async,async,waitAny)
 import Data.List
 
 
-type Condition b = Monoid b => b -> b -> Bool
+type IsFinished b = Monoid b => b -> b -> Bool
 
 type Transform a b = (Eq a, Monoid b) => a -> IO ([a], b)
 
 
 data Process a b = (Eq a, Monoid b) => Process
-  { processCondition :: Condition b
+  { processFinished :: IsFinished b
   , processTransform :: Transform a b
   }
 
@@ -41,8 +41,9 @@ exhaustively :: (Eq a, Monoid b) => Transform a b -> Int -> [a] -> IO b
 exhaustively transform = run $ Process (\_ _ -> False) transform
 
 
-until :: (Eq a, Monoid b) => Condition b -> Transform a b -> Int -> [a] -> IO b
-until condition transform = run $ Process condition transform
+until :: (Eq a, Monoid b) =>
+  IsFinished b -> Transform a b -> Int -> [a] -> IO b
+until finished transform = run $ Process finished transform
 
 
 exec :: (Eq a, Monoid b) => Process a b -> Pool a b -> IO b
@@ -68,10 +69,10 @@ wait :: (Eq a, Monoid b) => Process a b -> Pool a b -> IO b
 wait process pool = do
   let running = runningTasks pool
       output = taskOutput pool
-  (task, (inputs', b)) <- waitAny running
-  let output' = b <> output
-  if (processCondition process) output output'
-     then return output'
+  (task, (inputs', output')) <- waitAny running
+  let output'' = output' <> output
+  if (processFinished process) output output''
+     then return output''
      else
      let inputs = taskInputs pool
          inputs'' = inputs' \\ inputs
@@ -80,5 +81,5 @@ wait process pool = do
         { pendingTasks = pendingTasks pool ++ pending'
         , runningTasks = [ r | r <- running, r /= task ]
         , taskInputs = inputs ++ inputs''
-        , taskOutput = output'
+        , taskOutput = output''
         }
