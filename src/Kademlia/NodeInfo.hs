@@ -1,12 +1,22 @@
+{-# LANGUAGE DeriveGeneric #-}
 module Kademlia.NodeInfo where
 
-import Kademlia.KID             (KID)
+import Data.Aeson
+import GHC.Generics
+
+import Kademlia.KID (KID)
 
 
 data NodeInfo a = NodeInfo
   { nodeID :: KID
   , nodeAddr :: a
-  } deriving (Eq,Show)
+  } deriving (Generic,Eq,Show)
+
+
+instance (FromJSON a) => FromJSON (NodeInfo a) where
+
+
+instance (ToJSON a) => ToJSON (NodeInfo a) where
 
 
 isNode :: NodeInfo a -> NodeInfo b -> Bool

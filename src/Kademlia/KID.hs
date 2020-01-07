@@ -12,10 +12,13 @@ import Basement.Numerical.Number (toInteger)
 import Basement.Types.OffsetSize (CountOf(..),Offset(..))
 import Basement.Types.Word256 (Word256(..),bitwiseXor)
 import Crypto.Hash (Digest,SHA256,hash)
+import Data.Aeson
 import Data.Binary.Get (Get,getWord64be,runGet)
 import Data.Bits hiding (countLeadingZeros,xor)
+import Data.Hashable (Hashable(..))
 import Data.Hex (unhex)
 import Data.Word (Word8)
+import Data.Text.Encoding (decodeUtf8,encodeUtf8)
 import System.Random (getStdGen,setStdGen,random)
 import Text.Printf (printf)
 import qualified Data.ByteArray as BA
@@ -26,7 +29,31 @@ import qualified Data.ByteString.Lazy.Char8 as C8BS
 
 
 newtype KID = KID { word256 :: Word256 }
-  deriving (Eq,Ord,Show,Bits,Num)
+  deriving (Eq,Ord,Bits,Num)
+
+
+instance Hashable KID where
+  hashWithSalt s (KID (Word256 w64_0 w64_1 w64_2 w64_3)) =
+    (fromIntegral w64_0 :: Int) `hashWithSalt`
+    (fromIntegral w64_1 :: Int) `hashWithSalt`
+    (fromIntegral w64_2 :: Int) `hashWithSalt`
+    (fromIntegral w64_3 :: Int) `hashWithSalt` s
+
+
+instance FromJSON KID where
+  parseJSON (String t) =
+    case fromHex $ encodeUtf8 t of
+      Just kid ->       return kid
+      Nothing ->        fail "Invalid KID"
+  parseJSON _ = fail "Invalid KID"
+
+
+instance ToJSON KID where
+  toJSON kid = toJSON $ decodeUtf8 $ LBS.toStrict $ toHex kid
+
+
+instance Show KID where
+  show kid = C8BS.unpack $ toHex kid
 
 
 kidBits :: Int
@@ -138,7 +165,7 @@ randomKIDWithPrefix prefixFrom prefixBits = do
 
 sha256KID :: BS.ByteString -> IO KID
 sha256KID input = do
-  let d :: Digest SHA256 = hash input
+  let d :: Digest SHA256 = Crypto.Hash.hash input
   buffer <- BA.withByteArray d $ \p ->
     (createFromPtr p $ CountOf kidBytes) :: IO (Block Word256)
   return $ KID $ index buffer (Offset 0)

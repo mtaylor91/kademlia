@@ -10,6 +10,7 @@ import Kademlia.Controller.Messages
 import Kademlia.Controller.Processor
 import Kademlia.Controller.State
 import Kademlia.KID
+import Kademlia.MemoryCache
 import Kademlia.NodeInfo
 import Kademlia.RPC
 
@@ -21,8 +22,9 @@ start :: (Eq a, Show a) =>
 start localID protocol localAddr maybePeerAddr = do
   Protocol _ send receive <- protocol localAddr localID
 
+  cache <- memoryCache
   let node = NodeInfo localID localAddr
-      state = newEmptyState node
+      state = newEmptyState node cache
 
   messages <- newEmptyMVar
 

@@ -1,20 +1,21 @@
+{-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE RankNTypes #-}
 module Kademlia.Controller.State where
 
 import Control.Lens
 import Data.List                (findIndex,sortOn)
-import Data.Map                 (Map,empty,insert)
 import qualified Data.ByteString as BS
 
+import Kademlia.Cache           (Cache,query,store)
 import Kademlia.KID             (KID,getBucketIndex,kidBits,kidBytes,xor)
 import Kademlia.NodeInfo        (NodeInfo,isNode,nodeID)
 
 
-data State a = State
+data State a = forall c. Cache c => State
   { kBuckets :: [[NodeInfo a]]
-  , localData :: Map KID BS.ByteString
   , localNode :: NodeInfo a
-  } deriving (Show)
+  , stateCache :: c
+  }
 
 
 type UpdateFunction a r = State a -> (r, State a)
@@ -23,18 +24,23 @@ type UpdateFunction a r = State a -> (r, State a)
 type Update a = forall r. UpdateFunction a r -> IO (r, State a)
 
 
-newEmptyState :: NodeInfo a -> State a
-newEmptyState node = replaceBucket state [node] 255
+newEmptyState :: Cache c => NodeInfo a -> c -> State a
+newEmptyState node cache = replaceBucket state [node] 255
   where state = State
           { kBuckets = take kidBits $ repeat []
-          , localData = empty
           , localNode = node
+          , stateCache = cache
           }
 
 
-insertData :: KID -> BS.ByteString -> State a -> State a
-insertData kid value state =
-  state { localData = insert kid value $ localData state }
+query :: State a -> KID -> IO (Maybe (IO BS.ByteString))
+query (State _ _ cache) kid =
+  Kademlia.Cache.query cache kid
+
+
+store :: State a -> KID -> BS.ByteString -> IO ()
+store (State _ _ cache) kid bytes =
+  Kademlia.Cache.store cache kid bytes
 
 
 replaceBucket :: State a -> [NodeInfo a] -> Int -> State a

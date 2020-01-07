@@ -1,7 +1,10 @@
 {-# LANGUAGE RankNTypes #-}
 module Kademlia.Controller.Context where
 
-import Kademlia.Controller.State        (State,Update,localNode)
+import qualified Data.ByteString as BS
+
+import Kademlia.Controller.State        (State,Update,localNode,query,store)
+import Kademlia.KID                     (KID)
 import Kademlia.NodeInfo                (NodeInfo(..))
 import Kademlia.RPC                     (RPCRequest,RPCResult,SendRPC)
 
@@ -11,6 +14,16 @@ data Context a = Context
   , localState :: State a
   , updateLocalState :: Update a
   }
+
+
+query :: Context a -> KID -> IO (Maybe (IO BS.ByteString))
+query context kid =
+  Kademlia.Controller.State.query (localState context) kid
+
+
+store :: Context a -> KID -> BS.ByteString -> IO ()
+store context kid bytes =
+  Kademlia.Controller.State.store (localState context) kid bytes
 
 
 getState :: Context a -> IO (State a)

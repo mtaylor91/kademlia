@@ -4,12 +4,11 @@ import Prelude hiding (lookup,until)
 
 import Data.ByteString (ByteString)
 import Data.List (nubBy,sortOn)
-import Data.Map (lookup)
 
-import Kademlia.Controller.Context
-import Kademlia.Controller.State
-import Kademlia.KID
-import Kademlia.NodeInfo
+import Kademlia.Controller.Context (Context,getState,query,sendNode)
+import Kademlia.Controller.State (findNearestNodes)
+import Kademlia.KID (KID,emptyKID,kidBytes,xor)
+import Kademlia.NodeInfo (NodeInfo,isNode,nodeID)
 import Kademlia.ParallelProducer (until)
 import Kademlia.RPC
 import Kademlia.Tasks.BucketUpdate (updateBuckets)
@@ -46,11 +45,13 @@ instance Monoid (LookupResults a) where
 
 run :: Eq a => Context a -> KID -> IO (Maybe ByteString)
 run context kid = do
-  state <- getState context
-  case lookup kid (localData state) of
-    Just value ->
+  queryResult <- query context kid
+  case queryResult of
+    Just valueIO -> do
+      value <- valueIO
       return $ Just value
     Nothing -> do
+      state <- getState context
       let nearest = findNearestNodes state kid kidBytes
       results <- runLookup context kid nearest
       let seen = [ n | (n, Just _) <- lookupResults results ]

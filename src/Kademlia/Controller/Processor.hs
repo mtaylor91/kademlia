@@ -3,10 +3,9 @@ module Kademlia.Controller.Processor (processLoop) where
 import Prelude hiding (lookup)
 
 import Control.Concurrent
-import Data.Map (lookup)
 
 import Kademlia.API
-import Kademlia.Controller.Context
+import Kademlia.Controller.Context hiding (query,store)
 import Kademlia.Controller.Messages
 import Kademlia.Controller.State
 import Kademlia.KID
@@ -72,14 +71,17 @@ processRPC context state node request respond = do
     FindNodes kid -> do
       respond $ FoundNodes $ findNearestNodes state kid kidBytes
       return state
-    FindValue kid ->
-      case lookup kid (localData state) of
-        Just value -> do
+    FindValue kid -> do
+      maybeValueIO <- query state kid
+      case maybeValueIO of
+        Just valueIO -> do
+          value <- valueIO
           respond $ FoundValue value
           return state
         Nothing -> do
           respond $ FoundNodes $ findNearestNodes state kid kidBytes
           return state
     Store kid value -> do
+      store state kid value
       respond $ Stored kid
-      return $ insertData kid value state
+      return $ state
